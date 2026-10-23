@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cartoon Kombat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="canvas" width="1280" height="720"></canvas>
+
+    <!-- HUD da luta -->
+    <div id="hud" class="hidden">
+      <div class="bar-box p1">
+        <div class="bar"><div class="bar-trail"></div><div class="bar-fill"></div></div>
+        <div class="bar-name"></div>
+      </div>
+      <div id="timer">99</div>
+      <div class="bar-box p2">
+        <div class="bar"><div class="bar-trail"></div><div class="bar-fill"></div></div>
+        <div class="bar-name"></div>
+      </div>
+    </div>
+    <div id="announce"></div>
+
+    <!-- Carregando -->
+    <section id="screen-loading" class="screen">
+      <div class="loading">Carregando <span id="load-pct">0%</span></div>
+    </section>
+
+    <!-- Menu principal -->
+    <section id="screen-menu" class="screen hidden">
+      <h1 class="logo"><span>Cartoon</span><span>Kombat</span></h1>
+      <nav class="menu">
+        <button data-action="play">Jogar</button>
+        <button data-action="controls">Controles</button>
+        <button data-action="settings">Configurações</button>
+      </nav>
+      <p class="foot">Multiplayer local · 2 jogadores no mesmo teclado ou com controles</p>
+    </section>
+
+    <!-- Controles -->
+    <section id="screen-controls" class="screen hidden">
+      <div class="panel">
+        <h2>Controles</h2>
+        <div class="controls-grid">
+          <div class="ctrl p1">
+            <h3>Jogador 1</h3>
+            <p><kbd>A</kbd> <kbd>D</kbd> andar</p>
+            <p><kbd>W</kbd> pular</p>
+            <p><kbd>F</kbd> ataque rápido</p>
+            <p><kbd>G</kbd> ataque forte</p>
+          </div>
+          <div class="ctrl p2">
+            <h3>Jogador 2</h3>
+            <p><kbd>←</kbd> <kbd>→</kbd> andar</p>
+            <p><kbd>↑</kbd> pular</p>
+            <p><kbd>K</kbd> ou <kbd>Num 1</kbd> ataque rápido</p>
+            <p><kbd>L</kbd> ou <kbd>Num 2</kbd> ataque forte</p>
+          </div>
+        </div>
+        <p class="hint">Controles de videogame: direcional/analógico anda, <b>A</b> pula, <b>X</b> ataque rápido, <b>Y</b>/<b>B</b> ataque forte. <kbd>Esc</kbd> pausa.</p>
+        <button data-action="back">Voltar</button>
+      </div>
+    </section>
+
+    <!-- Configurações -->
+    <section id="screen-settings" class="screen hidden">
+      <div class="panel">
+        <h2>Configurações</h2>
+        <label class="row">Tempo da luta
+          <select id="opt-time">
+            <option value="60">60 s</option>
+            <option value="99">99 s</option>
+            <option value="0">Sem limite</option>
+          </select>
+        </label>
+        <label class="row">Som <input type="checkbox" id="opt-sound"></label>
+        <label class="row">Mostrar hitboxes <input type="checkbox" id="opt-boxes"></label>
+        <button data-action="back">Voltar</button>
+      </div>
+    </section>
+
+    <!-- Seleção de personagem -->
+    <section id="screen-select" class="screen hidden">
+      <h2 class="title">Escolha seu lutador</h2>
+      <div id="cards"></div>
+      <div class="select-status">
+        <div class="st p1" id="st-p1"></div>
+        <div class="st p2" id="st-p2"></div>
+      </div>
+      <p class="hint">J1: <kbd>A</kbd>/<kbd>D</kbd> escolhe, <kbd>F</kbd> confirma · J2: <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>K</kbd> confirma · <kbd>Esc</kbd> volta · ou clique no card</p>
+    </section>
+
+    <!-- Pausa -->
+    <section id="screen-pause" class="screen dim hidden">
+      <div class="panel">
+        <h2>Pausado</h2>
+        <button data-action="resume">Continuar</button>
+        <button data-action="menu">Menu principal</button>
+      </div>
+    </section>
+
+    <!-- Resultado / revanche -->
+    <section id="screen-result" class="screen hidden">
+      <div class="panel">
+        <h2 id="result-title"></h2>
+        <p class="hint">Revanche? Cada jogador aperta seu ataque rápido (<kbd>F</kbd> / <kbd>K</kbd>) ou clica.</p>
+        <div class="rematch">
+          <button class="p1" data-action="rematch-p1">J1: aceitar</button>
+          <button class="p2" data-action="rematch-p2">J2: aceitar</button>
+        </div>
+        <div class="rematch">
+          <button data-action="select">Trocar personagens</button>
+          <button data-action="menu">Menu principal</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="assets/frames.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/stage.js"></script>
+  <script src="js/fighter.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
