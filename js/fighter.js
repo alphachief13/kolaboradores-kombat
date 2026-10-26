@@ -31,8 +31,7 @@ CK.Fighter = class Fighter {
     this.aim = null;              // ponto mirado com o mouse no ataque forte (null = reto à frente)
     this.hasHit = false;
     this.stun = 0;
-    this.guard = this.st.guard;   // defesa: cai a cada golpe defendido e quebra no zero
-    this.guardCd = 0;             // ticks até a guarda começar a recuperar
+    this.energy = CK.ENERGY;      // gasta no ataque forte e recupera sozinha
   }
 
   get onGround() { return this.y >= CK.GROUND - 0.5; }
@@ -43,9 +42,11 @@ CK.Fighter = class Fighter {
     this.t = 0;
   }
 
-  // só um disparo do especial por vez na arena
+  // só um disparo do especial por vez na arena, e só com energia suficiente
   canShoot(game) {
-    return !this.def.attacks.attack2.projectile || !game.projectiles.some((p) => p.owner === this);
+    const a = this.def.attacks.attack2;
+    if (this.energy < (a.cost || 0)) return false;
+    return !a.projectile || !game.projectiles.some((p) => p.owner === this);
   }
 
   startAttack(name, aim) {
@@ -56,6 +57,7 @@ CK.Fighter = class Fighter {
     this.hits = 0;
     this.nextHit = 0;
     this.setState(name);
+    this.energy -= this.atk.cost || 0;
     if (this.onGround) this.vx = 0;
     this.game.emit('sfx', name === 'attack1' ? 'a1' : 'a2', this.charId);
   }
@@ -70,8 +72,7 @@ CK.Fighter = class Fighter {
     this.clock++;
     if (this.flash > 0) this.flash--;
     for (const k in this.status) if (this.status[k] > 0) this.status[k]--;
-    if (this.guardCd > 0) this.guardCd--;
-    else if (this.state !== 'block' && this.state !== 'dizzy') this.guard = Math.min(st.guard, this.guard + 0.4);
+    if (canAct && this.state !== 'attack2') this.energy = Math.min(CK.ENERGY, this.energy + CK.ENERGY_REGEN);
     if (this.trailHp > this.hp) this.trailHp = Math.max(this.hp, this.trailHp - 0.35);
 
     switch (this.state) {
@@ -118,12 +119,8 @@ CK.Fighter = class Fighter {
         else if (!canAct || !inp.block) this.setState('idle');
         break;
       case 'hit':
-      case 'dizzy':
         this.vx *= 0.88;
-        if (this.t >= this.stun) {
-          if (this.state === 'dizzy') this.guard = st.guard;
-          this.setState(this.onGround ? 'idle' : 'air');
-        }
+        if (this.t >= this.stun) this.setState(this.onGround ? 'idle' : 'air');
         break;
       case 'ko':
         if (this.onGround) this.vx *= 0.9;
@@ -148,7 +145,7 @@ CK.Fighter = class Fighter {
         else if (this.state === 'attack1' || this.state === 'attack2') this.vx = 0;
       }
     }
-    this.x = Math.max(CK.LEFT, Math.min(CK.RIGHT, this.x));
+    this.x = CK.wrapX(this.x);   // saiu por um lado da arena, entra pelo outro
 
     const prevFrame = this.frame;
     if (['idle', 'walk', 'prejump', 'land', 'block'].includes(this.state)) {
@@ -206,23 +203,12 @@ CK.Fighter = class Fighter {
     return this.state === 'block' && this.facing === -fromDir;
   }
 
-  // golpe defendido: tira pouca vida (nunca nocauteia), gasta a guarda e não aplica efeitos.
-  // Devolve true se a guarda quebrou.
+  // golpe defendido: tira pouca vida (nunca nocauteia) e não aplica efeitos; a defesa não quebra
   takeBlock(a, fromDir) {
-    this.hp = Math.max(1, this.hp - a.dmg * 0.15);
-    this.guard -= a.dmg * 4;
-    this.guardCd = 45;
+    this.hp = Math.max(1, this.hp - a.dmg * CK.CHIP);
     this.vx = fromDir * a.kb * 0.5 * this.st.weight;
-    if (this.guard <= 0) {
-      this.guard = 0;
-      this.setState('dizzy');
-      this.stun = 80;
-      this.flash = 6;
-      return true;
-    }
     this.setState('block');
     this.stun = Math.round(a.stun * 0.6);
-    return false;
   }
 
   takeHit(a, fromDir) {
@@ -268,6 +254,14 @@ CK.Fighter = class Fighter {
     return { x: this.x - CK.HURT_W / 2, y: this.y - CK.HURT_H, w: CK.HURT_W, h: CK.HURT_H };
   }
 
+  // deslocamentos em que o lutador aparece: perto da borda ele também surge do outro lado
+  copies() {
+    const out = [0];
+    if (this.x < CK.WRAP_VIS) out.push(CK.W);
+    if (this.x > CK.W - CK.WRAP_VIS) out.push(-CK.W);
+    return out;
+  }
+
   updateAnim() {
     const t = this.t;
     switch (this.state) {
@@ -294,7 +288,6 @@ CK.Fighter = class Fighter {
       }
       case 'hit': this.set('hit', Math.min(2, Math.floor((t / this.stun) * 3))); break;
       case 'block': this.set('jump', 0); break;          // agachado, se protegendo
-      case 'dizzy': this.set('hit', 1 + (Math.floor(t / 10) % 2)); break;
       case 'ko': this.set('ko', Math.min(this.frames.ko.length - 1, Math.floor(t / 9))); break;
       case 'win': {
         const seq = this.def.taunt;
@@ -310,6 +303,15 @@ CK.Fighter = class Fighter {
   }
 
   draw(ctx, showBoxes) {
+    for (const dx of this.copies()) {
+      ctx.save();
+      ctx.translate(dx, 0);
+      this.drawAt(ctx, showBoxes);
+      ctx.restore();
+    }
+  }
+
+  drawAt(ctx, showBoxes) {
     const fr = this.frames[this.anim][this.frame];
     const img = CK.images[fr.src];
     const s = CK.SCALE;
@@ -336,11 +338,9 @@ CK.Fighter = class Fighter {
     ctx.restore();
 
     if (this.state === 'block') this.drawShield(ctx);
-    this.drawGuardBar(ctx);
 
     // aviso do efeito em cima da cabeça
-    const label = this.state === 'dizzy' ? ['GUARDA QUEBRADA!', '#ffd23f']
-      : invert > 0 ? ['CONFUSO!', '#ff3a4a'] : slow > 0 ? ['ENROLADO!', '#fff1c9'] : null;
+    const label = invert > 0 ? ['CONFUSO!', '#ff3a4a'] : slow > 0 ? ['ENROLADO!', '#fff1c9'] : null;
     if (label && this.state !== 'ko') {
       ctx.save();
       ctx.font = '26px Bangers, Impact, sans-serif';
@@ -374,9 +374,8 @@ CK.Fighter = class Fighter {
   }
 };
 
-// escudo em arco na frente do lutador; fica mais fraco conforme a guarda cai
+// escudo em arco na frente do lutador
 CK.Fighter.prototype.drawShield = function (ctx) {
-  const k = this.guard / this.st.guard;
   const hit = this.t < this.stun;               // acabou de defender: escudo pisca
   const cx = this.x + this.facing * 20, cy = this.y - 140;
   const pulse = 0.5 + 0.5 * Math.sin(this.clock / 5);
@@ -387,13 +386,13 @@ CK.Fighter.prototype.drawShield = function (ctx) {
   const g = ctx.createRadialGradient(-40, 0, 40, -40, 0, 160);
   g.addColorStop(0, 'rgba(255,255,255,0)');
   g.addColorStop(1, this.def.spark);
-  ctx.globalAlpha = (hit ? 0.55 : 0.25 + 0.1 * pulse) * (0.35 + 0.65 * k);
+  ctx.globalAlpha = hit ? 0.55 : 0.25 + 0.1 * pulse;
   ctx.fillStyle = g;
   ctx.beginPath();
   ctx.ellipse(0, 0, 95, 150, 0, -Math.PI / 2, Math.PI / 2);
   ctx.fill();
   // borda brilhante
-  ctx.globalAlpha = (hit ? 1 : 0.6 + 0.3 * pulse) * (0.35 + 0.65 * k);
+  ctx.globalAlpha = hit ? 1 : 0.6 + 0.3 * pulse;
   ctx.strokeStyle = hit ? '#fff' : this.def.spark;
   ctx.lineWidth = hit ? 9 : 5;
   ctx.shadowColor = this.def.spark;
@@ -404,23 +403,14 @@ CK.Fighter.prototype.drawShield = function (ctx) {
   ctx.restore();
 };
 
-// barrinha da guarda em cima da cabeça, só quando não está cheia
-CK.Fighter.prototype.drawGuardBar = function (ctx) {
-  const k = this.guard / this.st.guard;
-  if (k >= 1 || this.state === 'ko') return;
-  const w = 90, x = this.x - w / 2, y = this.y - CK.HURT_H - 10;
-  ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,.55)';
-  ctx.fillRect(x - 2, y - 2, w + 4, 10);
-  ctx.fillStyle = k < 0.3 ? '#ff4a3a' : this.def.spark;
-  ctx.fillRect(x, y, w * k, 6);
-  ctx.restore();
-};
-
 CK.Fighter.NET_KEYS = ['x', 'y', 'vx', 'vy', 'facing', 'hp', 'trailHp', 'state', 't', 'clock',
-  'anim', 'frame', 'flash', 'hasHit', 'hits', 'nextHit', 'stun', 'guard', 'guardCd'];
+  'anim', 'frame', 'flash', 'hasHit', 'hits', 'nextHit', 'stun', 'energy'];
 
 function overlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 CK.overlap = overlap;
+
+// a arena dá a volta: x sempre em [0, W)
+CK.wrapX = (x) => ((x % CK.W) + CK.W) % CK.W;
+

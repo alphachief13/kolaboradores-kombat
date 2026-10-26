@@ -223,13 +223,6 @@ CK.Sfx = (() => {
       noise({ type: 'highpass', f: 4000, dur: 0.04, vol: 0.35 });
       kick({ f: 220, f2: 120, dur: 0.08, vol: 0.3 });
     },
-    // guarda quebrada: vidro estilhaçando
-    guardBreak: () => {
-      kick({ f: 120, f2: 30, dur: 0.4, vol: 0.8 });
-      noise({ type: 'highpass', f: 2500, dur: 0.5, vol: 0.45, wet: 0.35 });
-      for (let i = 0; i < 16; i++) osc({ f: rnd(2200, 6500), dur: rnd(0.08, 0.3), vol: 0.07, at: rnd(0, 0.4), wet: 0.3 });
-      osc({ type: 'sawtooth', f: 600, f2: 70, dur: 0.6, vol: 0.12, lp: 1800, at: 0.05 });
-    },
     jump: () => whoosh({ f: 400, f2: 2200, dur: 0.16, vol: 0.18 }),
     land: () => {
       kick({ f: 95, f2: 40, dur: 0.12, vol: 0.4 });

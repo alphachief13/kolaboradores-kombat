@@ -15,8 +15,13 @@ Jogue em `https://alphachief13.github.io/kolaboradores-kombat/` ou abra o `index
 | Defender       | `S` ou `H` (segure) | `↓` ou `Num 3` (segure) | LB / RB / baixo |
 | Pausar         | `Esc`     | `Esc`             |            |
 
-**Defesa**: segurando a defesa de frente para o golpe você leva só 15% do dano e não sofre efeitos (confuso, enrolado).
-Cada golpe defendido gasta a guarda (barrinha em cima da cabeça); se ela zerar, a guarda quebra e o lutador fica tonto.
+**Defesa**: segurando a defesa de frente para o golpe você leva só 20% do dano e não sofre efeitos (confuso, enrolado).
+O escudo nunca quebra.
+
+**Energia**: o ataque forte (projétil) gasta energia, a barra azul embaixo da vida. Ela recupera sozinha;
+quando acende, dá para disparar de novo.
+
+**Sem paredes**: quem passa da borda da arena reaparece do outro lado.
 
 **Mira no mouse**: durante a luta o mouse vira uma mira do jogador 1 (em rede, de quem está em cada computador).
 O clique lança o ataque forte (o projétil) na direção mirada: para cima, para baixo, no chão ou para trás.

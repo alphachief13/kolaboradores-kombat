@@ -5,16 +5,18 @@ window.CK = {
   H: 720,
   DT: 1 / 60,
   GROUND: 655,
-  LEFT: 70,
-  RIGHT: 1210,
   SCALE: 0.95,        // escala de desenho dos sprites (gerados com 300 px de altura)
   GRAVITY: 2700,
   JUMP_V: 1200,
   WALK: 340,
   BACK: 260,
   AIR: 330,
+  WRAP_VIS: 200,      // perto da borda o lutador também é desenhado do outro lado
   PUSH_DIST: 115,     // distância mínima entre os dois lutadores
   MAX_HP: 100,
+  ENERGY: 100,        // energia do ataque forte (cada disparo gasta "cost")
+  ENERGY_REGEN: 0.25, // energia recuperada por tick (15 por segundo)
+  CHIP: 0.2,          // fração do dano que passa pela defesa
   HURT_W: 100,
   HURT_H: 270,
 };
@@ -31,7 +33,7 @@ CK.CHARACTERS = {
     taunt: [2, 4, 5, 4],
     role: 'Artilheiro pesado',
     // lento e baixinho no pulo, mas aguenta pancada e tem o projétil mais forte do jogo
-    stats: { hp: 110, walk: 310, back: 235, air: 290, jump: 1100, weight: 0.85 },
+    stats: { hp: 105, walk: 310, back: 235, air: 290, jump: 1100, weight: 0.85 },
     attacks: {
       attack1: {
         name: 'Cassetete Tático',
@@ -48,9 +50,10 @@ CK.CHARACTERS = {
         preview: 1,
         ticks: [14, 10, 10, 14, 14],
         heavy: true,
+        cost: 55,
         projectile: {
           at: 34, fx: 'rocket', speed: 400, accel: 2600, maxSpeed: 1500, height: -175,
-          dmg: 18, stun: 30, kb: 520,
+          dmg: 15, stun: 28, kb: 480,
         },
       },
     },
@@ -82,6 +85,7 @@ CK.CHARACTERS = {
         preview: 1,
         ticks: [10, 12, 14, 10],
         heavy: true,
+        cost: 40,
         projectile: {
           at: 22, fx: 'capwave', kind: 'boomerang', speed: 950, decel: 700, height: -150,
           size: [130, 90], spin: 10, style: 'energy', dmg: 11, stun: 24, kb: 380,
@@ -108,7 +112,7 @@ CK.CHARACTERS = {
         ticks: [5, 5, 7, 8],
         active: [10, 18],
         box: [40, -235, 220, 120],
-        dmg: 7, stun: 16, kb: 240,
+        dmg: 8, stun: 16, kb: 240,
       },
       attack2: {
         name: 'Chuva de Cubinhos',
@@ -116,9 +120,10 @@ CK.CHARACTERS = {
         preview: 2,
         ticks: [10, 12, 14, 14, 12],
         heavy: true,
+        cost: 50,
         projectile: {
           at: 22, fx: 'cubewave', speed: 820, height: -170, size: [70, 70], scale: 1.2,
-          style: 'energy', dmg: 7, stun: 18, kb: 200,
+          style: 'energy', dmg: 5, stun: 16, kb: 180,
           shots: [{ at: 22, height: -170 }, { at: 32, height: -230 }, { at: 42, height: -105 }],
         },
       },
@@ -151,9 +156,10 @@ CK.CHARACTERS = {
         preview: 3,
         ticks: [12, 10, 10, 14, 12],
         heavy: true,
+        cost: 40,
         projectile: {
           at: 32, fx: 'ball', kind: 'bounce', speed: 700, vy: -500, grav: 2400, bounce: 0.78,
-          height: -150, size: [60, 60], spin: 14, style: 'energy', dmg: 13, stun: 26, kb: 450,
+          height: -150, size: [60, 60], spin: 14, style: 'energy', dmg: 12, stun: 26, kb: 450,
         },
       },
     },
@@ -187,9 +193,10 @@ CK.CHARACTERS = {
         preview: 2,
         ticks: [12, 12, 14, 14, 12],
         heavy: true,
+        cost: 35,
         projectile: {
           at: 24, fx: 'woolball', speed: 520, height: -55, size: [90, 70], spin: 10,
-          style: 'energy', dmg: 8, stun: 30, kb: 200, status: { slow: 150 },
+          style: 'energy', dmg: 8, stun: 30, kb: 200, status: { slow: 120 },
         },
       },
     },
@@ -222,9 +229,10 @@ CK.CHARACTERS = {
         preview: 3,
         ticks: [12, 12, 12, 16, 12],
         heavy: true,
+        cost: 35,
         projectile: {
           at: 24, fx: 'soundwave', kind: 'wave', speed: 950, range: 560, grow: 1.8,
-          height: -190, size: [90, 130], scale: 1.4, style: 'energy', dmg: 11, stun: 24, kb: 1000,
+          height: -190, size: [90, 130], scale: 1.4, style: 'energy', dmg: 10, stun: 22, kb: 700,
         },
       },
     },
@@ -239,7 +247,7 @@ CK.CHARACTERS = {
     taunt: [3, 4, 5, 4],
     role: 'Resistente',
     // lento, mas resistente; bate devagar e forte, e a onda de luz recupera vida
-    stats: { hp: 110, walk: 300, back: 240, air: 300, jump: 1100, weight: 0.9 },
+    stats: { hp: 105, walk: 300, back: 240, air: 300, jump: 1100, weight: 0.9 },
     attacks: {
       attack1: {
         name: 'Golpe da Palavra',
@@ -256,9 +264,10 @@ CK.CHARACTERS = {
         preview: 3,
         ticks: [12, 14, 12, 16, 12],
         heavy: true,
+        cost: 50,
         projectile: {
           at: 38, fx: 'holywave', speed: 480, height: -165, size: [70, 120], scale: 0.65,
-          style: 'energy', dmg: 12, stun: 28, kb: 420, heal: 10,
+          style: 'energy', dmg: 10, stun: 26, kb: 400, heal: 6,
         },
       },
     },
@@ -273,7 +282,7 @@ CK.CHARACTERS = {
     taunt: [2, 3, 2, 5],
     role: 'Acrobata',
     // pula alto e controla bem no ar, mas aguenta pouco; o boné cai do alto e não dá para pular por cima
-    stats: { hp: 90, walk: 365, back: 285, air: 380, jump: 1300, weight: 1.05 },
+    stats: { hp: 95, walk: 365, back: 285, air: 380, jump: 1300, weight: 1.05 },
     attacks: {
       attack1: {
         name: 'Boné Giratório',
@@ -291,9 +300,10 @@ CK.CHARACTERS = {
         preview: 2,
         ticks: [10, 12, 14, 14, 12],
         heavy: true,
+        cost: 35,
         projectile: {
           at: 22, fx: 'capcomet', kind: 'bounce', speed: 640, vy: -1050, grav: 2500, bounces: 0,
-          height: -180, size: [80, 80], spin: 12, style: 'energy', dmg: 12, stun: 26, kb: 420,
+          height: -180, size: [80, 80], spin: 12, style: 'energy', dmg: 13, stun: 26, kb: 420,
         },
       },
     },
@@ -306,6 +316,5 @@ CK.CHAR_IDS = Object.keys(CK.CHARACTERS);
 CK.statsOf = (def) => ({
   hp: CK.MAX_HP, walk: CK.WALK, back: CK.BACK, air: CK.AIR, jump: CK.JUMP_V,
   weight: 1,          // multiplica o empurrão que leva (menor = mais pesado)
-  guard: 100,         // resistência da defesa antes de quebrar
   ...def.stats,
 });

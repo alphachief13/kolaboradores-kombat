@@ -66,8 +66,8 @@ CK.Controls = (() => {
     { name: 'Andar', acts: ['left', 'right'], pad: 'Direcional / analógico', tip: 'Para trás você anda mais devagar.' },
     { name: 'Pular', acts: ['up'], pad: 'A', tip: 'Pule por cima dos especiais que vêm pelo chão.' },
     { name: 'Ataque rápido', acts: ['a1'], pad: 'X', tip: 'Golpe de perto que sai na hora. Funciona no ar.' },
-    { name: 'Ataque forte', acts: ['a2'], pad: 'Y / B', tip: 'O especial do personagem. Só um por vez na arena.' },
-    { name: 'Defender', acts: ['block'], pad: 'LB / RB / ↓', tip: 'Segure de frente para o golpe: leva pouco dano, mas a guarda quebra se abusar.' },
+    { name: 'Ataque forte', acts: ['a2'], pad: 'Y / B', tip: 'O especial do personagem. Gasta energia (barra azul), que volta sozinha.' },
+    { name: 'Defender', acts: ['block'], pad: 'LB / RB / ↓', tip: 'Segure de frente para o golpe: leva só um pouco de dano e o escudo nunca quebra.' },
   ];
 
   function tableHtml() {

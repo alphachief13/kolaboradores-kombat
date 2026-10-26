@@ -312,6 +312,21 @@ kbd {
 .bar-box.low .bar-fill { background: linear-gradient(180deg, #ffb0a0, #ff5a3a 45%, #c21a1a); animation: pulse .4s infinite alternate; }
 @keyframes pulse { to { filter: brightness(1.5); } }
 
+/* energia do ataque forte */
+.energy {
+  position: relative;
+  height: calc(var(--u) * 12);
+  margin-top: calc(var(--u) * 6);
+  background: #0c1a3a;
+  border: calc(var(--u) * 3) solid var(--ink);
+  transform: skewX(-14deg);
+  overflow: hidden;
+}
+.energy-fill { position: absolute; top: 0; bottom: 0; background: #3a5a8a; }
+.p1 .energy-fill { right: 0; }
+.p2 .energy-fill { left: 0; }
+.bar-box.charged .energy-fill { background: linear-gradient(180deg, #bff3ff, #3cc8ff 50%, #1a7ad8); }
+
 .bar-name {
   margin-top: calc(var(--u) * 6);
   font: calc(var(--u) * 30) var(--display);

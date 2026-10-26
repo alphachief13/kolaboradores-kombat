@@ -42,8 +42,7 @@ CK.Bot = class Bot {
     const toward = Math.sign(dx) || me.facing;
     const free = !me.busy;
     const oppAttacking = opp.state === 'attack1' || opp.state === 'attack2';
-    // com a guarda fraca prefere pular ou recuar a defender
-    const willBlock = () => me.guard > me.st.guard * 0.35 && rnd() < lv.guard;
+    const willBlock = () => rnd() < lv.guard;
 
     // pular projéteis: decide uma vez por projétil e pula quando ele está chegando
     for (const pr of game.projectiles) {
@@ -124,7 +123,7 @@ CK.Bot = class Bot {
         this.later('a1', 2 + Math.floor(rnd() * 4));
         this.cool = this.t + 24;
         this.move = 0;
-      } else if (me.guard > me.st.guard * 0.5 && rnd() < lv.guard * 0.5) {
+      } else if (rnd() < lv.guard * 0.5) {
         // defende por antecipação: golpes rápidos demais não dão tempo de reagir
         this.blockUntil = this.t + 20 + Math.floor(rnd() * 25);
         this.move = 0;

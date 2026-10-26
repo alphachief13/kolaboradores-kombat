@@ -111,19 +111,9 @@ CK.Game = class Game {
     const gap = CK.PUSH_DIST - Math.abs(dx);
     if (gap <= 0) return;
     const s = dx !== 0 ? Math.sign(dx) : a.facing;
-    a.x -= (s * gap) / 2;
-    b.x += (s * gap) / 2;
-    const clamp = (f) => { f.x = Math.max(CK.LEFT, Math.min(CK.RIGHT, f.x)); };
-    clamp(a);
-    clamp(b);
-    // encostado na parede: empurra só o outro
-    const left = Math.abs(b.x - a.x);
-    if (left < CK.PUSH_DIST) {
-      if (a.x <= CK.LEFT || a.x >= CK.RIGHT) b.x = a.x + s * CK.PUSH_DIST;
-      else a.x = b.x - s * CK.PUSH_DIST;
-      clamp(a);
-      clamp(b);
-    }
+    // sem paredes: quem passa da borda reaparece do outro lado
+    a.x = CK.wrapX(a.x - (s * gap) / 2);
+    b.x = CK.wrapX(b.x + (s * gap) / 2);
   }
 
   // aim: [x, y] mirado com o mouse (vai em linha reta até lá e segue em frente); sem aim, reto à frente
@@ -330,11 +320,11 @@ CK.Game = class Game {
     const heavy = a.dmg >= 12;
     const from = dir || (att.x <= def.x ? 1 : -1);
     if (def.blocks(from)) {
-      const broke = def.takeBlock(a, from);
-      this.emit('fx', 'block', px, py, def.def.spark, broke);
-      this.emit('fx', 'addShake', broke ? 14 : 4);
-      this.emit('sfx', broke ? 'guardBreak' : 'block');
-      this.hitstop = broke ? 12 : 4;
+      def.takeBlock(a, from);
+      this.emit('fx', 'block', px, py, def.def.spark);
+      this.emit('fx', 'addShake', 4);
+      this.emit('sfx', 'block');
+      this.hitstop = 4;
       return;
     }
     def.takeHit(a, from);

@@ -348,6 +348,9 @@
         box.querySelector('.bar-fill').style.width = (f.hp / f.maxHp) * 100 + '%';
         box.querySelector('.bar-trail').style.width = (f.trailHp / f.maxHp) * 100 + '%';
         box.classList.toggle('low', f.hp <= f.maxHp * 0.25);
+        // energia do ataque forte; acende quando dá para disparar
+        box.querySelector('.energy-fill').style.width = (f.energy / CK.ENERGY) * 100 + '%';
+        box.classList.toggle('charged', f.energy >= (f.def.attacks.attack2.cost || 0));
       });
       $('#timer').textContent = g.settings.roundTime ? g.time : '∞';
     },
