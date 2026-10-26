@@ -42,6 +42,8 @@
         </div>
       </div>
     </div>
+    <div id="net-badge" class="hidden"></div>
+    <div id="toast"></div>
 
     <!-- Carregando -->
     <section id="screen-loading" class="screen">
@@ -54,10 +56,11 @@
       <nav class="menu">
         <button data-action="play-cpu">1 Jogador · vs CPU</button>
         <button data-action="play-pvp">2 Jogadores</button>
+        <button data-action="play-net">Jogar em rede</button>
         <button data-action="controls">Controles</button>
         <button data-action="settings">Configurações</button>
       </nav>
-      <p class="foot">Lute contra o computador ou com um amigo no mesmo teclado ou com controles</p>
+      <p class="foot">Lute contra o computador, com um amigo no mesmo teclado ou com controles, ou em rede com outros computadores</p>
     </section>
 
     <!-- Controles -->
@@ -94,9 +97,72 @@
       </div>
     </section>
 
+    <!-- Jogar em rede: criar ou entrar numa sala -->
+    <section id="screen-net" class="screen hidden">
+      <div class="panel net-panel">
+        <h2>Jogar em rede</h2>
+        <label class="row">Seu nome <input id="net-name" maxlength="14" autocomplete="off" spellcheck="false"></label>
+        <div class="net-choices">
+          <div class="net-box">
+            <h3>Criar sala</h3>
+            <p>Os outros entram com o código que vai aparecer na sua tela.</p>
+            <button data-action="net-host">Criar sala</button>
+          </div>
+          <div class="net-box">
+            <h3>Entrar numa sala</h3>
+            <input id="net-code" class="code-input" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+            <button data-action="net-join">Entrar</button>
+          </div>
+        </div>
+        <p class="net-status" id="net-status"></p>
+        <p class="hint">Todos os computadores precisam estar na mesma rede (Wi-Fi ou cabo) e com internet para se conectarem.</p>
+        <button data-action="back">Voltar</button>
+      </div>
+    </section>
+
+    <!-- Sala: quem entrou, modo de jogo -->
+    <section id="screen-lobby" class="screen hidden">
+      <div class="panel lobby">
+        <div class="lobby-code">
+          <span class="theme">Código da sala</span>
+          <b id="lobby-code"></b>
+          <div id="lobby-link">
+            <div id="lobby-qr"></div>
+            <button class="small" data-action="net-copy">Copiar link</button>
+          </div>
+          <p class="hint">Nos outros computadores: <b>Jogar em rede → Entrar numa sala</b> e digite o código, ou abra o link.</p>
+        </div>
+        <div class="lobby-main">
+          <h2>Sala</h2>
+          <ul id="lobby-list"></ul>
+          <div id="lobby-opts"></div>
+          <p class="hint" id="lobby-hint"></p>
+          <div class="lobby-actions">
+            <button data-action="net-start" id="lobby-start">Começar</button>
+            <button class="small" data-action="net-role" id="lobby-role">Quero assistir</button>
+            <button class="small" data-action="net-leave">Sair da sala</button>
+          </div>
+          <p class="hint host-only">Deixe esta janela aberta: a sala roda neste computador.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Torneio: chaveamento -->
+    <section id="screen-bracket" class="screen hidden">
+      <h2 class="mk-title" id="bracket-title">Torneio</h2>
+      <div id="bracket"></div>
+      <p class="hint" id="bracket-hint"></p>
+      <div class="rematch">
+        <button data-action="net-next" id="bracket-next">Próxima luta</button>
+        <button data-action="net-lobby" id="bracket-lobby">Voltar à sala</button>
+        <button class="small" data-action="net-leave">Sair da sala</button>
+      </div>
+    </section>
+
     <!-- Seleção de personagem -->
     <section id="screen-select" class="screen hidden">
       <h2 class="mk-title">Escolha seu lutador</h2>
+      <div id="sel-timer"></div>
       <div class="mk-arena">
         <div class="mk-side p1" id="side-p1"><div class="mk-fig"><img alt=""></div><div class="mk-plate"></div></div>
         <div class="mk-board"><div id="cards"></div></div>
@@ -114,7 +180,10 @@
       <div class="panel">
         <h2>Pausado</h2>
         <button data-action="resume">Continuar</button>
-        <button data-action="menu">Menu principal</button>
+        <button data-action="menu" class="local-only">Menu principal</button>
+        <button data-action="net-lobby" class="net-only host-only">Voltar à sala</button>
+        <button data-action="net-leave" class="net-only">Sair da sala</button>
+        <p class="hint net-only">Em rede a luta não pausa.</p>
       </div>
     </section>
 
@@ -123,13 +192,15 @@
       <div class="panel">
         <h2 id="result-title"></h2>
         <p class="hint" id="result-hint">Revanche? Cada jogador aperta seu ataque rápido (<kbd>F</kbd> / <kbd>K</kbd>) ou clica.</p>
-        <div class="rematch">
+        <div class="rematch no-tourney">
           <button class="p1" data-action="rematch-p1">J1: aceitar</button>
           <button class="p2" data-action="rematch-p2">J2: aceitar</button>
         </div>
         <div class="rematch">
-          <button data-action="select">Trocar personagens</button>
-          <button data-action="menu">Menu principal</button>
+          <button data-action="select" class="no-tourney player-only">Trocar personagens</button>
+          <button data-action="menu" class="local-only">Menu principal</button>
+          <button data-action="net-lobby" class="net-only host-only">Voltar à sala</button>
+          <button data-action="net-leave" class="net-only small">Sair da sala</button>
         </div>
       </div>
     </section>
@@ -145,6 +216,8 @@
   <script src="js/ai.js"></script>
   <script src="js/game.js"></script>
   <script src="js/controls.js"></script>
+  <script src="js/net.js"></script>
+  <script src="js/online.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

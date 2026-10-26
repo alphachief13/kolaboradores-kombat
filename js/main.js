@@ -31,9 +31,11 @@
   let game = null;          // partida em andamento
   let demo = null;          // lutadores parados atrás do menu
   let picks = ['soldado', 'bonezinho'];
-  let mode = 'pvp';         // 'cpu': jogador 2 é o computador
+  let mode = 'pvp';         // 'cpu': jogador 2 é o computador · 'net': partida em rede (ver online.js)
   const SELECT_HINT = {
     pvp: $('#select-hint').innerHTML,
+    net: 'Escolha com <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd>, confirme com <kbd>F</kbd>/<kbd>K</kbd>, desfaça com <kbd>G</kbd>/<kbd>L</kbd> · ou clique no retrato',
+    watch: 'Assistindo: os jogadores estão escolhendo seus lutadores.',
     cpu: 'Escolha seu lutador e depois o da CPU: <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>F</kbd>/<kbd>K</kbd> confirma, <kbd>G</kbd>/<kbd>L</kbd> desfaz · <kbd>Esc</kbd> volta · ou clique no retrato',
   };
   const RESULT_HINT = {
@@ -49,10 +51,12 @@
     if (!inGame) $('#announce').className = '';
     const first = document.querySelector(`#screen-${name} button`);
     if (first && name !== 'select') first.focus({ preventScroll: true });
+    CK.Online.onShow(name);
   }
 
   function startFight() {
     CK.Input.clear();
+    if (mode === 'net') mode = 'pvp';
     const cpu = mode === 'cpu';
     game = CK.current = new CK.Game(picks[0], picks[1], settings, false, cpu ? settings.difficulty : null);
     ['p1', 'p2'].forEach((p, i) => { $(`#hud .${p} .bar-name`).textContent = CK.CHARACTERS[picks[i]].name; });
@@ -97,6 +101,7 @@
     switch (btn.dataset.action) {
       case 'play-cpu': mode = 'cpu'; openSelect(); break;
       case 'play-pvp': mode = 'pvp'; openSelect(); break;
+      case 'play-net': show('net'); CK.Online.open(); break;
       case 'controls': show('controls'); break;
       case 'intro-go': if (game) game.skipIntro(); break;
       case 'intro-never':
@@ -109,9 +114,12 @@
       case 'back': show('menu'); break;
       case 'resume': show('fight'); break;
       case 'menu': toMenu(); break;
-      case 'select': game = null; openSelect(); break;
-      case 'rematch-p1': game && game.acceptRematch(0); break;
-      case 'rematch-p2': game && game.acceptRematch(1); break;
+      case 'select': if (mode === 'net') CK.Online.reselect(); else { game = null; openSelect(); } break;
+      case 'rematch-p1':
+      case 'rematch-p2':
+        if (mode === 'net') CK.Online.rematch();
+        else if (game) game.acceptRematch(btn.dataset.action === 'rematch-p1' ? 0 : 1);
+        break;
     }
   });
 
@@ -120,7 +128,7 @@
     if (screen === 'fight') show('pause');
     else if (screen === 'pause') show('fight');
     else if (screen === 'select') selectBack();
-    else if (['controls', 'settings'].includes(screen)) show('menu');
+    else if (['controls', 'settings', 'net'].includes(screen)) show('menu');
   });
 
   // ---------- seleção de personagem ----------
@@ -155,8 +163,8 @@
         <span class="tag p1">1P</span><span class="tag p2">2P</span>`;
       framePortrait(card.querySelector('img'), window.FRAMES[id].idle[0], cols === 4 ? 140 : 150);
       card.onclick = () => {
-        const p = !sel.ok[0] ? 0 : !sel.ok[1] ? 1 : -1;
-        if (p < 0) return;
+        const p = mode === 'net' ? CK.Online.mySlot : !sel.ok[0] ? 0 : !sel.ok[1] ? 1 : -1;
+        if (p < 0 || sel.ok[p]) return;
         sel.idx[p] = i;
         confirmPick(p);
       };
@@ -197,6 +205,7 @@
   }
 
   function openSelect() {
+    if (mode === 'net') mode = 'pvp';
     sel.ok = [false, false];
     sel.idx = [CK.CHAR_IDS.indexOf(picks[0]), CK.CHAR_IDS.indexOf(picks[1])];
     document.querySelectorAll('#cards .tag.p2').forEach((t) => { t.textContent = mode === 'cpu' ? 'CPU' : '2P'; });
@@ -207,18 +216,29 @@
   }
 
   function selectBack() {
+    if (mode === 'net') {
+      const p = CK.Online.mySlot;
+      if (p >= 0 && sel.ok[p]) { sel.ok[p] = false; picked(p); }
+      return;
+    }
     if (sel.ok[1]) sel.ok[1] = false;
     else if (sel.ok[0]) sel.ok[0] = false;
     else return show('menu');
     renderSelect();
   }
 
+  // em rede, a própria escolha vai para o anfitrião (que decide quando a luta começa)
+  function picked(p) {
+    renderSelect();
+    if (mode === 'net') CK.Online.pickChanged(sel.idx[p], sel.ok[p]);
+  }
+
   function confirmPick(p) {
     if (sel.ok[p]) return;
     sel.ok[p] = true;
     CK.Sfx.play('confirm');
-    renderSelect();
-    if (sel.ok[0] && sel.ok[1]) {
+    picked(p);
+    if (mode !== 'net' && sel.ok[0] && sel.ok[1]) {
       picks = sel.idx.map((i) => CK.CHAR_IDS[i]);
       setTimeout(() => { if (screen === 'select' && sel.ok[0] && sel.ok[1]) startFight(); }, 900);
     }
@@ -244,7 +264,7 @@
         <div class="move"><b>Rápido</b> ${a1.name}</div>
         <div class="move"><b>Forte</b> ${a2.name}</div>`;
       drawSide(p, Date.now());
-      const label = mode === 'cpu' && p === 1 ? 'CPU' : `J${p + 1}`;
+      const label = mode === 'cpu' && p === 1 ? 'CPU' : mode === 'net' ? esc(CK.Online.slotName(p)) : `J${p + 1}`;
       $(`#st-p${p + 1}`).innerHTML = `<b>${label}</b> ${sel.ok[p] ? '<em>PRONTO ✓</em>' : '<i>escolhendo…</i>'}`;
     });
   }
@@ -272,12 +292,22 @@
     if (inp.leftP || inp.rightP) {
       sel.idx[p] = (sel.idx[p] + (inp.rightP ? 1 : n - 1)) % n;
       CK.Sfx.play('move');
-      renderSelect();
+      picked(p);
     }
     if (inp.a1P) confirmPick(p);
   }
 
   function selectTick(inputs) {
+    if (mode === 'net') {
+      // cada computador controla só o seu lado, com qualquer um dos dois esquemas de teclas
+      const p = CK.Online.mySlot;
+      if (p < 0) return;
+      const inp = CK.Input.merge(inputs[0], inputs[1]);
+      if (sel.ok[p]) {
+        if (inp.a2P) { sel.ok[p] = false; picked(p); }
+      } else stepPick(p, inp);
+      return;
+    }
     if (mode === 'cpu') {
       // um jogador escolhe os dois: primeiro o seu, depois o da CPU
       const inp = CK.Input.merge(inputs[0], inputs[1]);
@@ -333,15 +363,51 @@
       ['p1', 'p2'].forEach((p, i) => {
         const b = document.querySelector(`#screen-result button.${p}`);
         b.classList.toggle('ok', r[i]);
-        const label = mode === 'cpu' && i === 1 ? 'CPU' : `J${i + 1}`;
+        const label = mode === 'cpu' && i === 1 ? 'CPU' : mode === 'net' ? CK.Online.slotName(i) : `J${i + 1}`;
         b.textContent = `${label}: ${r[i] ? 'pronto ✓' : 'aceitar'}`;
+        b.disabled = mode === 'net' && CK.Online.mySlot !== i;
       });
     },
   };
 
-  // ---------- ponte com os outros módulos ----------
+  // ---------- ponte com o modo em rede (online.js) ----------
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
   CK.App = {
+    settings,
     get screen() { return screen; },
+    show,
+    setGame(g) {
+      game = CK.current = g;
+      if (g) mode = 'net';
+    },
+    setNames(names) {
+      ['p1', 'p2'].forEach((p, i) => { $(`#hud .${p} .bar-name`).textContent = names[i]; });
+    },
+    // abre a escolha de lutadores com o estado vindo do anfitrião
+    netSelect(idx, ok) {
+      mode = 'net';
+      sel.idx = [...idx];
+      sel.ok = [...ok];
+      document.querySelectorAll('#cards .tag.p2').forEach((t) => { t.textContent = '2P'; });
+      $('#select-hint').innerHTML = SELECT_HINT[CK.Online.mySlot >= 0 ? 'net' : 'watch'];
+      CK.Input.clear();
+      show('select');
+      renderSelect();
+    },
+    // escolhas atualizadas pelo anfitrião; a do próprio jogador só muda se ele forçar (tempo esgotado)
+    setSel(idx, ok, force) {
+      if (screen !== 'select') return;
+      const mine = CK.Online.mySlot;
+      [0, 1].forEach((p) => {
+        if (p === mine && !force) return;
+        if (sel.idx[p] !== idx[p]) CK.Sfx.play('move');
+        if (ok[p] && !sel.ok[p]) CK.Sfx.play('confirm');
+        sel.idx[p] = idx[p];
+        sel.ok[p] = ok[p];
+      });
+      renderSelect();
+    },
+    pump() { step(performance.now()); },
   };
 
   // ---------- escala responsiva ----------
@@ -363,10 +429,28 @@
   let last = performance.now();
   let acc = 0;
 
-  // mira do mouse (jogador 1): some o cursor e desenha a mira na arena
+  // avança os ticks lógicos; em rede a partida nunca pausa (quem abre o menu continua na luta)
+  function step(now) {
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    if (screen === 'loading') return;
+    const online = CK.Online.active;
+    const active = game && (online || screen !== 'pause') ? game : null;
+    acc += dt * (active && active.slowmo > 0 ? 0.35 : 1);
+    while (acc >= CK.DT) {
+      acc -= CK.DT;
+      const inputs = CK.Input.poll();
+      if (online) CK.Online.tick(inputs);
+      else if (active) active.tick(inputs);
+      if (!game) demo.tick(inputs);
+      if (screen === 'select') selectTick(inputs);
+    }
+  }
+
+  // mira do mouse (jogador 1, ou o próprio lutador em rede): some o cursor e desenha a mira na arena
   function drawAim(now) {
     const m = CK.Input.mouse;
-    const me = !game || screen !== 'fight' || game.phase === 'intro' || !m.in ? -1 : 0;
+    const me = !game || screen !== 'fight' || game.phase === 'intro' || !m.in ? -1 : mode === 'net' ? CK.Online.mySlot : 0;
     document.body.classList.toggle('aiming', me >= 0);
     if (me < 0) return;
     const f = game.fighters[me];
@@ -406,18 +490,8 @@
   }
 
   function loop(now) {
-    const dt = Math.min(0.1, (now - last) / 1000);
-    last = now;
+    step(now);
     if (screen !== 'loading') {
-      const active = game && screen !== 'pause' ? game : null;
-      acc += dt * (active && active.slowmo > 0 ? 0.35 : 1);
-      while (acc >= CK.DT) {
-        acc -= CK.DT;
-        const inputs = CK.Input.poll();
-        if (active) active.tick(inputs);
-        else if (!game) demo.tick(inputs);
-        if (screen === 'select') selectTick(inputs);
-      }
       const g = game || demo;
       ctx.setTransform(1, 0, 0, 1, CK.view.ox, CK.view.oy);
       g.draw(ctx, now / 1000);
@@ -455,6 +529,9 @@
     CK.Controls.render($('#prefight-board'), { table: false });
     demo = new CK.Game('soldado', 'bonezinho', settings, true);
     show('menu');
+    // link de convite (?sala=1234): vai direto para a sala
+    const code = new URLSearchParams(location.search).get('sala');
+    if (code) { show('net'); CK.Online.open(code); }
   });
   requestAnimationFrame(loop);
 })();

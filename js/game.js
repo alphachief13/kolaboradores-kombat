@@ -19,6 +19,9 @@ CK.Game = class Game {
     this.settings = settings;
     this.demo = demo;
     this.bot = botLevel ? new CK.Bot(botLevel) : null;   // controla o jogador 2
+    this.names = null;        // nomes dos jogadores (partida em rede)
+    this.events = null;       // anfitrião em rede: guarda os eventos de cada tick para os outros
+    this.onFinish = null;
     for (const f of this.fighters) f.game = this;
     this.reset();
   }
@@ -376,11 +379,13 @@ CK.Game = class Game {
 
   finish() {
     this.phase = 'over';
+    if (this.onFinish) this.onFinish(this.winner ? this.winner.idx : -1);   // placar da partida em rede
     let title = 'Empate!';
     if (this.winner) {
       this.winner.setState('win');
       this.emit('sfx', 'win');
-      title = this.bot ? (this.winner.idx === 0 ? 'Você venceu!' : 'Você perdeu!') : `${this.winner.def.name} vence!`;
+      title = this.bot ? (this.winner.idx === 0 ? 'Você venceu!' : 'Você perdeu!')
+        : `${this.names ? this.names[this.winner.idx] : this.winner.def.name} vence!`;
     }
     this.emit('result', title, this.winner ? this.winner.idx : -1);
     if (this.bot) {          // o computador sempre aceita a revanche
@@ -397,9 +402,38 @@ CK.Game = class Game {
     if (this.rematch[0] && this.rematch[1]) this.reset();
   }
 
-  // sons, avisos e efeitos visuais (ver CK.present)
+  // sons, avisos e efeitos visuais: executa aqui e, no anfitrião em rede, guarda para enviar
   emit(type, ...args) {
     CK.present(type, args);
+    if (this.events) this.events.push([type, ...args]);
+  }
+
+  // estado completo da luta para enviar pela rede (os clientes só desenham)
+  serialize() {
+    return {
+      f: this.fighters.map((f) => f.serialize()),
+      p: this.projectiles.map((pr) => ({
+        o: pr.owner.idx, d: pr.dir, x: pr.x, y: pr.y, t: pr.t, k: pr.k, a: pr.alpha, r: pr.ang,
+        q: { fx: pr.p.fx, kind: pr.p.kind, every: pr.p.every, scale: pr.p.scale, spin: pr.p.spin },
+      })),
+      ph: this.phase, pt: this.phaseT, hs: this.hitstop, sm: this.slowmo, tm: this.time,
+      ce: this.controlsEnabled, rm: this.rematch, w: this.winner ? this.winner.idx : -1,
+    };
+  }
+
+  applyState(s) {
+    s.f.forEach((st, i) => this.fighters[i].applyState(st));
+    this.projectiles = s.p.map((p) => ({
+      owner: this.fighters[p.o], dir: p.d, x: p.x, y: p.y, t: p.t, k: p.k, alpha: p.a, ang: p.r || 0, p: p.q, fx: window.FX[p.q.fx],
+    }));
+    this.phase = s.ph;
+    this.phaseT = s.pt;
+    this.hitstop = s.hs;
+    this.slowmo = s.sm;
+    this.time = s.tm;
+    this.controlsEnabled = s.ce;
+    this.rematch = s.rm;
+    this.winner = s.w >= 0 ? this.fighters[s.w] : null;
   }
 
   draw(ctx, time) {

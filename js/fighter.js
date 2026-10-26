@@ -243,6 +243,21 @@ CK.Fighter = class Fighter {
     if (!this.onGround) this.vy = -350;
   }
 
+  // campos que mudam durante a luta (ver Game.serialize); o golpe vai pelo nome
+  serialize() {
+    const s = {};
+    for (const k of Fighter.NET_KEYS) s[k] = this[k];
+    s.status = { ...this.status };
+    s.atk = this.atk === this.def.attacks.attack1 ? 1 : this.atk ? 2 : 0;
+    return s;
+  }
+
+  applyState(s) {
+    for (const k of Fighter.NET_KEYS) this[k] = s[k];
+    this.status = s.status;
+    this.atk = s.atk ? this.def.attacks['attack' + s.atk] : null;
+  }
+
   hitbox(box) {
     const [ox, oy, w, h] = box;
     return { x: this.facing > 0 ? this.x + ox : this.x - ox - w, y: this.y + oy, w, h };
@@ -401,6 +416,9 @@ CK.Fighter.prototype.drawGuardBar = function (ctx) {
   ctx.fillRect(x, y, w * k, 6);
   ctx.restore();
 };
+
+CK.Fighter.NET_KEYS = ['x', 'y', 'vx', 'vy', 'facing', 'hp', 'trailHp', 'state', 't', 'clock',
+  'anim', 'frame', 'flash', 'hasHit', 'hits', 'nextHit', 'stun', 'guard', 'guardCd'];
 
 function overlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
