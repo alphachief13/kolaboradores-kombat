@@ -63,7 +63,7 @@ Depois de cada push, o jogo fica em `https://alphachief13.github.io/kolaboradore
 - **Dééééééborah** (cordeira): cabeçada de cordeira (rápido) e bola de lã (novelo arremessado que cruza a arena; dá para pular por cima).
 - **Petista** (militante): livraço vermelho (rápido) e grito de megafone (onda sonora que cruza a arena; dá para pular por cima).
 - **Pastor** (pregador): golpe da palavra (rápido) e onda de luz (onda dourada que cruza a arena; dá para pular por cima).
-- **Mr. Robot** (hacker): soco holográfico (rápido) e explosão de glitch (dados corrompidos que cruzam a arena; dá para pular por cima).
+- **Cordeiro Bandicoot** (acrobata): boné giratório (rápido) e boné cometa (boné lançado em arco que estoura onde cai; fuja para o lado).
 
 ## Estrutura
 

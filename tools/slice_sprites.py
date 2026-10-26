@@ -81,14 +81,14 @@ SHEETS = {
         "hit":     ("Pastor em três poses de reação-6.png", 3, 1),
         "ko":      ("Pastor em queda_ seis poses cômicas-7.png", 6, 2),
     },
-    "mrrobot": {
-        "idle":    ("Spritesheet do hacker em espera-1.png", 6, 2),
-        "walk":    ("Ciclo de caminhada do hacker-2.png", 6, 2),
-        "jump":    ("Salto do hacker em quatro quadros-3.png", 4, 2),
-        "attack1": ("Golpe holográfico do hacker-4.png", 4, 2),
-        "attack2": ("Ataque hacker com explosão digital vermelha-5.png", 5, 1),
-        "hit":     ("Hacker reage ao impacto em três frames-6.png", 3, 1),
-        "ko":      ("Hacker encapuzado em derrota animada-7.png", 6, 2),
+    "bandicoot": {
+        "idle":    ("Spritesheet de espera do raposo lutador-1.png", 6, 2),
+        "walk":    ("Folha de sprites_ raposo em caminhada-2.png", 6, 2),
+        "jump":    ("Salto acrobático da raposa bandicoot-3.png", 4, 2),
+        "attack1": ("Golpe giratório do marsupial de boné-4.png", 4, 2),
+        "attack2": ("Golpe bumerangue com boné azul-5.png", 5, 1),
+        "hit":     ("Raposa de boné reagindo ao golpe-6.png", 3, 1),
+        "ko":      ("Queda cômica do bandicoot de boné-7.png", 6, 2),
     },
 }
 
@@ -446,10 +446,10 @@ MANUAL = {
             [(1660, 0, 1983, 793), (1622, 618, 1660, 793)],
         ],
     },
-    "mrrobot": {
+    "bandicoot": {
         "attack2": [
-            [(0, 0, 295, 793)], [(295, 0, 660, 793)], [(660, 0, 1255, 620), (660, 620, 1185, 793)],
-            [(1255, 0, 1712, 793), (1185, 620, 1255, 793)], [(1712, 0, 1983, 793)],
+            [(0, 0, 400, 793)], [(400, 0, 755, 793)], [(755, 300, 1240, 793), (1240, 300, 1320, 450), (755, 0, 1210, 300)],
+            [(1210, 0, 1640, 300), (1320, 300, 1640, 793), (1240, 450, 1320, 793)], [(1640, 0, 1983, 793)],
         ],
     },
 }
@@ -480,8 +480,10 @@ FX = [
      "box": (1478, 150, 1660, 618), "angle": 0, "fade": 0.12,
      # a frente da onda passa da caixa: apaga também acima e abaixo da mão (que fica)
      "erase": [(1478, 150, 1660, 640), (1385, 150, 1478, 318), (1385, 425, 1478, 640)]},
-    {"name": "glitch", "char": "mrrobot", "anim": "attack2", "frame": 3,
-     "box": (1550, 205, 1708, 560), "angle": 0},
+    {"name": "capcomet", "char": "bandicoot", "anim": "attack2", "frame": 2,
+     "box": (1195, 350, 1320, 440), "angle": 0,
+     # o boné também aparece lá no alto no quadro seguinte: apaga a explosão azul
+     "erase": [(1195, 350, 1320, 440), (1280, 110, 1640, 335)]},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -494,7 +496,7 @@ STAND_H = {
     "deborah": {"idle": 476, "walk": 476, "jump": 560, "attack1": 566, "attack2": 395, "hit": 660, "ko": 490},
     "petista": {"idle": 492, "walk": 492, "jump": 490, "attack1": 490, "attack2": 435, "hit": 565, "ko": 492},
     "pastor": {"idle": 465, "walk": 465, "jump": 520, "attack1": 556, "attack2": 435, "hit": 630, "ko": 470},
-    "mrrobot": {"idle": 490, "walk": 485, "jump": 470, "attack1": 540, "attack2": 585, "hit": 670, "ko": 495},
+    "bandicoot": {"idle": 450, "walk": 476, "jump": 515, "attack1": 512, "attack2": 395, "hit": 660, "ko": 465},
 }
 
 if __name__ == "__main__":
