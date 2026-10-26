@@ -49,6 +49,12 @@ CK.Game = class Game {
     if (this.slowmo > 0) this.slowmo--;
     if (this.bot) inputs = [CK.Input.merge(inputs[0], inputs[1]), NO_INPUT];
 
+    // preparação: contagem com os controles na tela; o ataque rápido de qualquer um adianta
+    if (this.phase === 'intro') {
+      if (inputs.some((inp) => inp.a1P)) this.phaseT = this.introLen;
+      if (this.phaseT >= this.introLen) this.skipIntro();
+    }
+
     if (this.phase === 'countdown') {
       const steps = { 1: '3', 50: '2', 100: '1' };
       if (steps[this.phaseT]) { this.emit('announce', steps[this.phaseT], 'count'); this.emit('sfx', 'beep'); }
@@ -78,6 +84,19 @@ CK.Game = class Game {
       if (--this.time === 0) this.timeUp();
     }
     if (this.phase === 'ko' && this.phaseT === 110) this.finish();
+  }
+
+  // antes do "3, 2, 1": "ticks" de preparação com os controles na tela (ver main.js)
+  startIntro(ticks) {
+    this.phase = 'intro';
+    this.phaseT = 0;
+    this.introLen = ticks;
+  }
+
+  skipIntro() {
+    if (this.phase !== 'intro') return;
+    this.phase = 'countdown';
+    this.phaseT = 0;
   }
 
   // impede que um atravesse o outro (exceto pulando por cima)

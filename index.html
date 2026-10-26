@@ -28,6 +28,21 @@
     </div>
     <div id="announce"></div>
 
+    <!-- Antes da luta: contagem regressiva com os controles (nas primeiras partidas) -->
+    <div id="prefight" class="hidden">
+      <div class="panel prefight-panel">
+        <div class="prefight-head">
+          <h2>Prepare-se!</h2>
+          <div class="prefight-count"><span>A luta começa em</span><b id="prefight-n">5</b></div>
+        </div>
+        <div id="prefight-board"></div>
+        <div class="prefight-actions">
+          <button data-action="intro-go">Começar já</button>
+          <button class="ghost" data-action="intro-never">Não mostrar mais</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Carregando -->
     <section id="screen-loading" class="screen">
       <div class="loading">Carregando <span id="load-pct">0%</span></div>
@@ -47,26 +62,9 @@
 
     <!-- Controles -->
     <section id="screen-controls" class="screen hidden">
-      <div class="panel">
+      <div class="panel controls-panel">
         <h2>Controles</h2>
-        <div class="controls-grid">
-          <div class="ctrl p1">
-            <h3>Jogador 1</h3>
-            <p><kbd>A</kbd> <kbd>D</kbd> andar</p>
-            <p><kbd>W</kbd> pular</p>
-            <p><kbd>F</kbd> ataque rápido</p>
-            <p><kbd>G</kbd> ataque forte</p>
-          </div>
-          <div class="ctrl p2">
-            <h3>Jogador 2</h3>
-            <p><kbd>←</kbd> <kbd>→</kbd> andar</p>
-            <p><kbd>↑</kbd> pular</p>
-            <p><kbd>K</kbd> ou <kbd>Num 1</kbd> ataque rápido</p>
-            <p><kbd>L</kbd> ou <kbd>Num 2</kbd> ataque forte</p>
-          </div>
-        </div>
-        <p class="hint">Contra a CPU, você pode usar os controles de qualquer um dos dois jogadores.</p>
-        <p class="hint">Controles de videogame: direcional/analógico anda, <b>A</b> pula, <b>X</b> ataque rápido, <b>Y</b>/<b>B</b> ataque forte. <kbd>Esc</kbd> pausa.</p>
+        <div id="controls-board"></div>
         <button data-action="back">Voltar</button>
       </div>
     </section>
@@ -91,6 +89,7 @@
         </label>
         <label class="row">Som <input type="checkbox" id="opt-sound"></label>
         <label class="row">Mostrar hitboxes <input type="checkbox" id="opt-boxes"></label>
+        <label class="row">Controles antes da luta <input type="checkbox" id="opt-intro"></label>
         <button data-action="back">Voltar</button>
       </div>
     </section>
@@ -145,6 +144,7 @@
   <script src="js/fighter.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/controls.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

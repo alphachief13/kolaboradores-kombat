@@ -6,7 +6,8 @@
   const ctx = canvas.getContext('2d');
 
   // ---------- configurações ----------
-  const settings = { roundTime: 99, sound: true, showBoxes: false, difficulty: 'normal' };
+  // showIntro/introCount: controles na tela antes das primeiras lutas (ver INTRO_TIMES)
+  const settings = { roundTime: 99, sound: true, showBoxes: false, difficulty: 'normal', showIntro: true, introCount: 0 };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('ck-settings') || '{}')); } catch (e) { /* sem storage */ }
   const saveSettings = () => {
     try { localStorage.setItem('ck-settings', JSON.stringify(settings)); } catch (e) { /* sem storage */ }
@@ -21,6 +22,9 @@
   $('#opt-diff').onchange = (e) => { settings.difficulty = e.target.value; saveSettings(); };
   $('#opt-sound').onchange = (e) => { settings.sound = e.target.checked; saveSettings(); };
   $('#opt-boxes').onchange = (e) => { settings.showBoxes = e.target.checked; saveSettings(); };
+  // religar pelas configurações mostra de novo nas próximas lutas
+  $('#opt-intro').checked = settings.showIntro;
+  $('#opt-intro').onchange = (e) => { settings.showIntro = e.target.checked; settings.introCount = 0; saveSettings(); };
 
   // ---------- telas ----------
   let screen = 'loading';
@@ -55,6 +59,30 @@
     if (cpu) $('#hud .p2 .bar-name').textContent += ` · CPU ${CK.BOT_LEVELS[settings.difficulty].name}`;
     $('#result-hint').innerHTML = RESULT_HINT[mode];
     show('fight');
+    if (settings.showIntro && settings.introCount < INTRO_TIMES) {
+      settings.introCount++;
+      saveSettings();
+      game.startIntro(INTRO_TICKS);
+    }
+  }
+
+  // ---------- controles antes da luta ----------
+  const INTRO_TIMES = 3;        // quantas lutas mostram os controles antes de começar
+  const INTRO_TICKS = 6 * 60;   // duração da contagem (6 s)
+
+  function updatePrefight() {
+    const on = !!game && game.phase === 'intro' && screen === 'fight';
+    $('#prefight').classList.toggle('hidden', !on);
+    if (!on) return;
+    const n = String(Math.max(1, Math.ceil((game.introLen - game.phaseT) / 60)));
+    const el = $('#prefight-n');
+    if (el.textContent !== n) {
+      el.textContent = n;
+      el.classList.remove('tick');
+      void el.offsetWidth;     // reinicia a animação
+      el.classList.add('tick');
+      CK.Sfx.play('move');
+    }
   }
 
   function toMenu() {
@@ -70,6 +98,13 @@
       case 'play-cpu': mode = 'cpu'; openSelect(); break;
       case 'play-pvp': mode = 'pvp'; openSelect(); break;
       case 'controls': show('controls'); break;
+      case 'intro-go': if (game) game.skipIntro(); break;
+      case 'intro-never':
+        settings.showIntro = false;
+        $('#opt-intro').checked = false;
+        saveSettings();
+        if (game) game.skipIntro();
+        break;
       case 'settings': show('settings'); break;
       case 'back': show('menu'); break;
       case 'resume': show('fight'); break;
@@ -331,7 +366,7 @@
   // mira do mouse (jogador 1): some o cursor e desenha a mira na arena
   function drawAim(now) {
     const m = CK.Input.mouse;
-    const me = !game || screen !== 'fight' || !m.in ? -1 : 0;
+    const me = !game || screen !== 'fight' || game.phase === 'intro' || !m.in ? -1 : 0;
     document.body.classList.toggle('aiming', me >= 0);
     if (me < 0) return;
     const f = game.fighters[me];
@@ -388,6 +423,7 @@
       g.draw(ctx, now / 1000);
       drawAim(now);
       if (game) CK.UI.updateHud(game);
+      updatePrefight();
     }
     requestAnimationFrame(loop);
   }
@@ -415,6 +451,8 @@
 
   preload().then(() => {
     buildCards();
+    CK.Controls.render($('#controls-board'));
+    CK.Controls.render($('#prefight-board'), { table: false });
     demo = new CK.Game('soldado', 'bonezinho', settings, true);
     show('menu');
   });

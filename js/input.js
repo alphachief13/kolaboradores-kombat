@@ -58,6 +58,7 @@ CK.Input = (() => {
   let state = [{}, {}];
 
   return {
+    KEYS,   // mapeamento de teclas por jogador (a tela de controles desenha a partir dele)
     // chamado uma vez por tick lógico
     poll() {
       state = KEYS.map((map, i) => {
