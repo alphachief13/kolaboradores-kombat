@@ -72,6 +72,15 @@ SHEETS = {
         "hit":     ("Reação cômica ao golpe-6.png", 3, 1),
         "ko":      ("Nocaute cômico em seis quadros-7.png", 6, 2),
     },
+    "pastor": {
+        "idle":    ("Pastor carismático em guarda de combate-1.png", 6, 2),
+        "walk":    ("Spritesheet do pastor em caminhada-2.png", 6, 2),
+        "jump":    ("Pastor carismático em salto-3.png", 4, 2),
+        "attack1": ("Golpe de Bíblia em quatro poses-4.png", 4, 2),
+        "attack2": ("Pastor lança onda de luz dourada-5.png", 5, 1),
+        "hit":     ("Pastor em três poses de reação-6.png", 3, 1),
+        "ko":      ("Pastor em queda_ seis poses cômicas-7.png", 6, 2),
+    },
 }
 
 
@@ -220,6 +229,10 @@ def main():
             scale = TARGET_H / STAND_H[char].get(anim, STAND_H[char]["idle"])
             for f in fx:
                 export_fx(f, fname, frames[f["frame"]], scale, meta)
+            for i, n in FEATHER.get(char, {}).get(anim, {}).items():
+                a = frames[i]["img"][:, :, 3]
+                n = min(n, a.shape[1])
+                a[:, -n:] = (a[:, -n:] * np.linspace(1, 0, n)[None, :]).astype(np.uint8)
             out = []
             for i, fr in enumerate(frames):
                 im = Image.fromarray(fr["img"])
@@ -308,6 +321,22 @@ MANUAL = {
             [(0, 600, 520, 1024)], [(520, 600, 1010, 1024)], [(1010, 600, 1536, 1024)],
         ],
     },
+    "pastor": {
+        "walk": [
+            [(0, 0, 463, 506)], [(463, 0, 900, 506)], [(900, 0, 1536, 506)],
+            [(0, 506, 486, 1024)], [(486, 506, 900, 1024)], [(900, 506, 1536, 1024)],
+        ],
+        "attack2": [
+            [(0, 0, 330, 793)], [(330, 0, 690, 620), (330, 620, 660, 793)],
+            [(690, 0, 1140, 540), (660, 540, 1040, 793)], [(1040, 0, 1490, 793)],
+            [(1660, 0, 1983, 793), (1622, 618, 1660, 793)],
+        ],
+    },
+}
+
+# quadros cujo corte à direita atravessa um brilho: esmaece as últimas n colunas (px da folha)
+FEATHER = {
+    "pastor": {"attack2": {2: 90, 3: 15}},
 }
 
 # objetos recortados da folha (e apagados do quadro) para virarem projéteis
@@ -324,6 +353,8 @@ FX = [
      "box": (1030, 315, 1190, 415), "angle": 0, "fade": 0.35},
     {"name": "soundwave", "char": "petista", "anim": "attack2", "frame": 2,
      "box": (1100, 240, 1190, 400), "angle": 0, "fade": 0.25},
+    {"name": "holywave", "char": "pastor", "anim": "attack2", "frame": 3,
+     "box": (1478, 150, 1660, 618), "angle": 0, "fade": 0.12},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -335,6 +366,7 @@ STAND_H = {
     "wanessinha": {"idle": 505, "walk": 505, "jump": 600, "attack1": 593, "attack2": 562, "hit": 684, "ko": 505},
     "deborah": {"idle": 476, "walk": 476, "jump": 560, "attack1": 566, "attack2": 395, "hit": 660, "ko": 490},
     "petista": {"idle": 492, "walk": 492, "jump": 490, "attack1": 490, "attack2": 435, "hit": 565, "ko": 492},
+    "pastor": {"idle": 465, "walk": 465, "jump": 520, "attack1": 556, "attack2": 435, "hit": 630, "ko": 470},
 }
 
 if __name__ == "__main__":

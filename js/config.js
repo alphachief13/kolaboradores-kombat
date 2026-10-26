@@ -204,6 +204,37 @@ CK.CHARACTERS = {
       },
     },
   },
+  pastor: {
+    name: 'Pastor',
+    theme: 'Pregador',
+    desc: 'Terno alinhado, gravata vermelha e a Bíblia sempre debaixo do braço. Prega a paz — mas sabe se defender.',
+    color: '#c99a2e',
+    spark: '#ffe08a',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    attacks: {
+      attack1: {
+        name: 'Golpe da Palavra',
+        desc: 'Uma pancada com a Bíblia de capa dura. Rápida e abençoada.',
+        preview: 2,
+        ticks: [5, 5, 7, 7],
+        active: [10, 17],
+        box: [30, -235, 195, 125],
+        dmg: 7, stun: 16, kb: 260,
+      },
+      attack2: {
+        name: 'Onda de Luz',
+        desc: 'Ergue o dedo ao céu e empurra uma onda de luz dourada pela arena. Lento para preparar — pule por cima!',
+        preview: 3,
+        ticks: [12, 14, 12, 16, 12],
+        heavy: true,
+        projectile: {
+          at: 38, fx: 'holywave', speed: 760, height: -165, size: [80, 150], scale: 0.65,
+          style: 'energy', dmg: 15, stun: 28, kb: 480,
+        },
+      },
+    },
+  },
 };
 
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);
