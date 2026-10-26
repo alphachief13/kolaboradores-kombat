@@ -189,6 +189,7 @@
   }
 
   // lutador de corpo inteiro ao lado da grade, ancorado pelos pés
+  const FIG_SCALE = 0.92;   // lutador de corpo inteiro nas laterais (cabe em .mk-fig)
   function drawSide(p, now) {
     const id = CK.CHAR_IDS[sel.idx[p]];
     const c = CK.CHARACTERS[id];
@@ -198,9 +199,9 @@
     if (img.dataset.src !== f.src) {
       img.dataset.src = f.src;
       img.src = f.src;
-      img.style.width = `calc(var(--u) * ${f.w * 1.1})`;
-      img.style.left = `calc(50% - var(--u) * ${f.ax * 1.1})`;
-      img.style.bottom = `calc(var(--u) * ${(f.ay - f.h) * 1.1})`;
+      img.style.width = `calc(var(--u) * ${f.w * FIG_SCALE})`;
+      img.style.left = `calc(50% - var(--u) * ${f.ax * FIG_SCALE})`;
+      img.style.bottom = `calc(var(--u) * ${(f.ay - f.h) * FIG_SCALE})`;
     }
   }
 

@@ -242,7 +242,7 @@ kbd {
 .mk-fig {
   position: relative;
   width: 100%;
-  height: calc(var(--u) * 340);
+  height: calc(var(--u) * 280);
   background: radial-gradient(ellipse at 50% 92%, rgba(0, 0, 0, .55), transparent 45%);
 }
 .mk-side.p2 .mk-fig { transform: scaleX(-1); }
@@ -271,7 +271,7 @@ kbd {
 .mk-plate .move { font-size: calc(var(--u) * 15); color: #eee; line-height: 1.5; }
 .mk-plate .move b { color: var(--accent); margin-right: .3em; }
 .mk-plate .stats { margin-bottom: calc(var(--u) * 6); }
-.mk-plate .stat { display: flex; align-items: center; gap: calc(var(--u) * 8); font-size: calc(var(--u) * 12); color: #cfc9c0; text-transform: uppercase; letter-spacing: .08em; }
+.mk-plate .stat { display: flex; align-items: center; line-height: 1.25; gap: calc(var(--u) * 8); font-size: calc(var(--u) * 12); color: #cfc9c0; text-transform: uppercase; letter-spacing: .08em; }
 .mk-plate .stat span { width: calc(var(--u) * 82); }
 .mk-plate .stat i { flex: 1; height: calc(var(--u) * 7); background: rgba(255, 255, 255, .12); border-radius: calc(var(--u) * 4); overflow: hidden; }
 .mk-plate .stat b { display: block; height: 100%; background: var(--accent); border-radius: inherit; transition: width .2s; }
