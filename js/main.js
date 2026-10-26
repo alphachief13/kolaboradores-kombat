@@ -94,9 +94,9 @@
 
   // enquadra o retrato: escala a caixa da cabeça (pré-calculada em tools/slice_sprites.py)
   // para caber no card e centraliza nela
-  function framePortrait(img, fr) {
+  function framePortrait(img, fr, TILE_W) {
     const [x0, x1, y0] = fr.head;
-    const TILE_W = 150, TILE_H = 176;                // área interna do card
+    const TILE_H = 176;                              // altura interna do card
     const scale = Math.min(TILE_W * 1.02 / (x1 - x0), TILE_H * 1.5 / fr.h);
     const cx = (x0 + x1) / 2;
     img.style.height = `calc(var(--u) * ${fr.h * scale})`;
@@ -108,6 +108,9 @@
   function buildCards() {
     const box = $('#cards');
     box.innerHTML = '';
+    // duas linhas: três colunas até 6 personagens, quatro (cards mais estreitos) acima disso
+    const cols = CK.CHAR_IDS.length > 6 ? 4 : 3;
+    box.classList.toggle('cols4', cols === 4);
     const tiles = CK.CHAR_IDS.map((id, i) => {
       const c = CK.CHARACTERS[id];
       const card = document.createElement('div');
@@ -115,7 +118,7 @@
       card.style.setProperty('--accent', c.color);
       card.innerHTML = `<img src="${frameSrc(id, 'idle', 0)}" alt="${c.name}">
         <span class="tag p1">1P</span><span class="tag p2">2P</span>`;
-      framePortrait(card.querySelector('img'), window.FRAMES[id].idle[0]);
+      framePortrait(card.querySelector('img'), window.FRAMES[id].idle[0], cols === 4 ? 140 : 150);
       card.onclick = () => {
         const p = !sel.ok[0] ? 0 : !sel.ok[1] ? 1 : -1;
         if (p < 0) return;
@@ -124,10 +127,21 @@
       };
       return card;
     });
-    const emblem = document.createElement('div');
-    emblem.className = 'emblem';
-    emblem.innerHTML = '<span>KK</span>';
-    tiles.splice(Math.floor(tiles.length / 2), 0, emblem);
+    // o emblema preenche as vagas da última linha: no meio, ou dos dois lados de um retrato sozinho
+    const emblem = () => {
+      const e = document.createElement('div');
+      e.className = 'emblem';
+      e.innerHTML = '<span>KK</span>';
+      return e;
+    };
+    const rest = tiles.length % cols;
+    const pad = (cols - rest) % cols;
+    if (rest === 1 && pad === 2) {
+      tiles.splice(tiles.length - 1, 0, emblem());
+      tiles.push(emblem());
+    } else if (pad) {
+      tiles.splice(tiles.length - rest + Math.ceil(rest / 2), 0, ...Array.from({ length: pad }, emblem));
+    }
     tiles.forEach((t) => box.appendChild(t));
   }
 

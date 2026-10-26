@@ -194,8 +194,9 @@ CK.Game = class Game {
       const img = CK.images[pr.fx.src];
       ctx.save();
       ctx.translate(pr.x, pr.y);
-      ctx.scale(pr.dir * CK.SCALE, CK.SCALE);
-      ctx.rotate((-pr.fx.angle * Math.PI) / 180);
+      const k = CK.SCALE * (pr.p.scale || 1);
+      ctx.scale(pr.dir * k, k);
+      ctx.rotate((-pr.fx.angle * Math.PI) / 180 + (pr.p.spin || 0) * time);
       ctx.drawImage(img, -pr.fx.w / 2, -pr.fx.h / 2, pr.fx.w, pr.fx.h);
       ctx.restore();
     }

@@ -180,6 +180,8 @@ kbd {
     0 calc(var(--u) * 6) calc(var(--u) * 14) rgba(0, 0, 0, .45);
 }
 #cards { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--u) * 14); max-width: calc(var(--u) * 560); }
+#cards.cols4 { max-width: calc(var(--u) * 642); }
+#cards.cols4 .card, #cards.cols4 .emblem { width: calc(var(--u) * 150); }
 
 .card, .emblem {
   position: relative;
