@@ -235,6 +235,37 @@ CK.CHARACTERS = {
       },
     },
   },
+  mrrobot: {
+    name: 'Mr. Robot',
+    theme: 'Hacker',
+    desc: 'Capuz na cabeça, luvas sem dedo e um terminal no pulso. Invade qualquer sistema — inclusive a sua guarda.',
+    color: '#c4182c',
+    spark: '#ff2a3a',
+    idle: [0, 1, 0, 5],
+    taunt: [2, 3, 2, 4],
+    attacks: {
+      attack1: {
+        name: 'Soco Holográfico',
+        desc: 'Carrega o punho com código e acerta de perto. Rápido e preciso.',
+        preview: 2,
+        ticks: [5, 5, 7, 7],
+        active: [10, 17],
+        box: [30, -240, 200, 125],
+        dmg: 7, stun: 16, kb: 260,
+      },
+      attack2: {
+        name: 'Explosão de Glitch',
+        desc: 'Digita no terminal do pulso e dispara um pacote de dados corrompidos pela arena. Lento para preparar — pule por cima!',
+        preview: 2,
+        ticks: [12, 12, 12, 14, 12],
+        heavy: true,
+        projectile: {
+          at: 36, fx: 'glitch', speed: 820, height: -175, size: [80, 130],
+          style: 'energy', dmg: 15, stun: 28, kb: 480,
+        },
+      },
+    },
+  },
 };
 
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);

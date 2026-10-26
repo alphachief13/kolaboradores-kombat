@@ -81,6 +81,15 @@ SHEETS = {
         "hit":     ("Pastor em três poses de reação-6.png", 3, 1),
         "ko":      ("Pastor em queda_ seis poses cômicas-7.png", 6, 2),
     },
+    "mrrobot": {
+        "idle":    ("Spritesheet do hacker em espera-1.png", 6, 2),
+        "walk":    ("Ciclo de caminhada do hacker-2.png", 6, 2),
+        "jump":    ("Salto do hacker em quatro quadros-3.png", 4, 2),
+        "attack1": ("Golpe holográfico do hacker-4.png", 4, 2),
+        "attack2": ("Ataque hacker com explosão digital vermelha-5.png", 5, 1),
+        "hit":     ("Hacker reage ao impacto em três frames-6.png", 3, 1),
+        "ko":      ("Hacker encapuzado em derrota animada-7.png", 6, 2),
+    },
 }
 
 
@@ -332,6 +341,12 @@ MANUAL = {
             [(1660, 0, 1983, 793), (1622, 618, 1660, 793)],
         ],
     },
+    "mrrobot": {
+        "attack2": [
+            [(0, 0, 295, 793)], [(295, 0, 660, 793)], [(660, 0, 1255, 620), (660, 620, 1185, 793)],
+            [(1255, 0, 1712, 793), (1185, 620, 1255, 793)], [(1712, 0, 1983, 793)],
+        ],
+    },
 }
 
 # quadros cujo corte à direita atravessa um brilho: esmaece as últimas n colunas (px da folha)
@@ -355,6 +370,8 @@ FX = [
      "box": (1100, 240, 1190, 400), "angle": 0, "fade": 0.25},
     {"name": "holywave", "char": "pastor", "anim": "attack2", "frame": 3,
      "box": (1478, 150, 1660, 618), "angle": 0, "fade": 0.12},
+    {"name": "glitch", "char": "mrrobot", "anim": "attack2", "frame": 3,
+     "box": (1550, 205, 1708, 560), "angle": 0},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -367,6 +384,7 @@ STAND_H = {
     "deborah": {"idle": 476, "walk": 476, "jump": 560, "attack1": 566, "attack2": 395, "hit": 660, "ko": 490},
     "petista": {"idle": 492, "walk": 492, "jump": 490, "attack1": 490, "attack2": 435, "hit": 565, "ko": 492},
     "pastor": {"idle": 465, "walk": 465, "jump": 520, "attack1": 556, "attack2": 435, "hit": 630, "ko": 470},
+    "mrrobot": {"idle": 490, "walk": 485, "jump": 470, "attack1": 540, "attack2": 585, "hit": 670, "ko": 495},
 }
 
 if __name__ == "__main__":
