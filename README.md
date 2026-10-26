@@ -12,7 +12,15 @@ Jogue em `https://alphachief13.github.io/kolaboradores-kombat/` ou abra o `index
 | Pular          | `W`       | `↑`               | A          |
 | Ataque rápido  | `F`       | `K` ou `Num 1`    | X          |
 | Ataque forte   | `G`       | `L` ou `Num 2`    | Y / B      |
+| Defender       | `S` ou `H` (segure) | `↓` ou `Num 3` (segure) | LB / RB / baixo |
 | Pausar         | `Esc`     | `Esc`             |            |
+
+**Defesa**: segurando a defesa de frente para o golpe você leva só 15% do dano e não sofre efeitos (confuso, enrolado).
+Cada golpe defendido gasta a guarda (barrinha em cima da cabeça); se ela zerar, a guarda quebra e o lutador fica tonto.
+
+**Mira no mouse**: durante a luta o mouse vira uma mira do jogador 1.
+O clique lança o ataque forte (o projétil) na direção mirada: para cima, para baixo, no chão ou para trás.
+Pela tecla do ataque forte o projétil sai reto, como antes.
 
 Modos: **1 Jogador · vs CPU** (o jogador 2 é controlado pelo computador; dificuldade Fácil, Normal ou Difícil em Configurações; o jogador pode usar as teclas de qualquer um dos dois lados) e **2 Jogadores** (local).
 

@@ -204,13 +204,32 @@
       side.style.setProperty('--accent', c.color);
       side.querySelector('.mk-plate').innerHTML = `
         <h3>${c.name}</h3>
-        <div class="theme">${c.theme}</div>
+        <div class="theme">${c.theme}${c.role ? ` · ${c.role}` : ''}</div>
+        ${statBars(c)}
         <div class="move"><b>Rápido</b> ${a1.name}</div>
         <div class="move"><b>Forte</b> ${a2.name}</div>`;
       drawSide(p, Date.now());
       const label = mode === 'cpu' && p === 1 ? 'CPU' : `J${p + 1}`;
       $(`#st-p${p + 1}`).innerHTML = `<b>${label}</b> ${sel.ok[p] ? '<em>PRONTO ✓</em>' : '<i>escolhendo…</i>'}`;
     });
+  }
+
+  // barras de atributos; as faixas são fixas para o elenco poder crescer sem recalibrar
+  function statBars(c) {
+    const st = CK.statsOf(c);
+    const total = (a) => (a.projectile
+      ? a.projectile.dmg * (a.projectile.shots || [0]).length
+      : a.dmg * (a.hits || 1));
+    const rows = [
+      ['Vida', st.hp, 75, 130],
+      ['Força', total(c.attacks.attack1) + total(c.attacks.attack2), 14, 28],
+      ['Velocidade', st.walk, 250, 420],
+      ['Pulo', st.jump, 950, 1400],
+    ];
+    return `<div class="stats">${rows.map(([label, v, lo, hi]) => {
+      const pct = Math.round(15 + 85 * Math.max(0, Math.min(1, (v - lo) / (hi - lo))));
+      return `<div class="stat"><span>${label}</span><i><b style="width:${pct}%"></b></i></div>`;
+    }).join('')}</div>`;
   }
 
   function stepPick(p, inp) {
@@ -260,9 +279,9 @@
     updateHud(g) {
       g.fighters.forEach((f, i) => {
         const box = document.querySelector(`#hud .p${i + 1}`);
-        box.querySelector('.bar-fill').style.width = (f.hp / CK.MAX_HP) * 100 + '%';
-        box.querySelector('.bar-trail').style.width = (f.trailHp / CK.MAX_HP) * 100 + '%';
-        box.classList.toggle('low', f.hp <= 25);
+        box.querySelector('.bar-fill').style.width = (f.hp / f.maxHp) * 100 + '%';
+        box.querySelector('.bar-trail').style.width = (f.trailHp / f.maxHp) * 100 + '%';
+        box.classList.toggle('low', f.hp <= f.maxHp * 0.25);
       });
       $('#timer').textContent = g.settings.roundTime ? g.time : '∞';
     },
@@ -285,6 +304,11 @@
     },
   };
 
+  // ---------- ponte com os outros módulos ----------
+  CK.App = {
+    get screen() { return screen; },
+  };
+
   // ---------- escala responsiva ----------
   function resize() {
     const w = Math.min(innerWidth, (innerHeight * 16) / 9);
@@ -295,7 +319,7 @@
     const s = w / CK.W;
     canvas.width = Math.round(innerWidth / s);
     canvas.height = Math.round(innerHeight / s);
-    CK.view = { ox: (canvas.width - CK.W) / 2, oy: (canvas.height - CK.H) / 2, w: canvas.width, h: canvas.height };
+    CK.view = { ox: (canvas.width - CK.W) / 2, oy: (canvas.height - CK.H) / 2, w: canvas.width, h: canvas.height, s };
   }
   addEventListener('resize', resize);
   resize();
@@ -303,6 +327,48 @@
   // ---------- laço principal ----------
   let last = performance.now();
   let acc = 0;
+
+  // mira do mouse (jogador 1): some o cursor e desenha a mira na arena
+  function drawAim(now) {
+    const m = CK.Input.mouse;
+    const me = !game || screen !== 'fight' || !m.in ? -1 : 0;
+    document.body.classList.toggle('aiming', me >= 0);
+    if (me < 0) return;
+    const f = game.fighters[me];
+    const ready = f.state !== 'ko' && f.canShoot(game);
+    const color = ready ? f.def.spark : 'rgba(255,255,255,.45)';
+    const r = 18 + (ready ? Math.sin(now / 150) * 2 : 0);
+    ctx.save();
+    ctx.lineCap = 'round';
+    // linha pontilhada da mão até a mira
+    if (ready) {
+      const hx = f.x + Math.sign(m.x - f.x || f.facing) * 60, hy = f.y - 170;
+      ctx.setLineDash([4, 12]);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(255,255,255,.3)';
+      ctx.beginPath();
+      ctx.moveTo(hx, hy);
+      ctx.lineTo(m.x, m.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    for (const [w, c] of [[7, 'rgba(0,0,0,.6)'], [3, color]]) {
+      ctx.lineWidth = w;
+      ctx.strokeStyle = c;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        ctx.moveTo(m.x + dx * (r - 8), m.y + dy * (r - 8));
+        ctx.lineTo(m.x + dx * (r + 9), m.y + dy * (r + 9));
+      }
+      ctx.stroke();
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 
   function loop(now) {
     const dt = Math.min(0.1, (now - last) / 1000);
@@ -320,6 +386,7 @@
       const g = game || demo;
       ctx.setTransform(1, 0, 0, 1, CK.view.ox, CK.view.oy);
       g.draw(ctx, now / 1000);
+      drawAim(now);
       if (game) CK.UI.updateHud(game);
     }
     requestAnimationFrame(loop);

@@ -27,6 +27,22 @@ CK.Effects = (() => {
       add({ type: 'text', x, y: y - 40, vy: -120, text: heavy ? 'POW!' : 'PÁ!', color, size: heavy ? 64 : 42, max: 0.55 });
     },
 
+    // golpe defendido: faíscas batendo no escudo; broke = a guarda quebrou
+    block(x, y, color, broke) {
+      add({ type: 'ring', x, y, size: broke ? 140 : 70, color: broke ? '#ffd23f' : color, max: 0.25 });
+      for (let i = 0; i < (broke ? 24 : 10); i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = rand(200, broke ? 900 : 500);
+        add({ type: 'spark', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, color: i % 2 ? color : '#fff', size: rand(2, 5), max: rand(0.15, 0.3) });
+      }
+      add({ type: 'text', x, y: y - 40, vy: -120, text: broke ? 'QUEBROU!' : 'DEFENDEU!', color: broke ? '#ffd23f' : '#fff', size: broke ? 56 : 34, max: 0.5 });
+    },
+
+    // texto solto subindo (ex.: vida recuperada)
+    label(x, y, text, color) {
+      add({ type: 'text', x, y, vy: -90, text, color, size: 40, max: 0.9 });
+    },
+
     explosion(x, y) {
       add({ type: 'flash', x, y, size: 170, max: 0.16 });
       add({ type: 'ring', x, y, size: 160, color: '#ffd24a', max: 0.35 });

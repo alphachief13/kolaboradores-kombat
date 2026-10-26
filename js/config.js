@@ -29,23 +29,29 @@ CK.CHARACTERS = {
     spark: '#ffe36b',
     idle: [0, 1, 0, 3],
     taunt: [2, 4, 5, 4],
+    role: 'Artilheiro pesado',
+    // lento e baixinho no pulo, mas aguenta pancada e tem o projétil mais forte do jogo
+    stats: { hp: 110, walk: 310, back: 235, air: 290, jump: 1100, weight: 0.85 },
     attacks: {
       attack1: {
         name: 'Cassetete Tático',
-        desc: 'Pancada rápida e curta. Dá para usar sem parar.',
+        desc: 'Pancada curta e firme. Um pouco mais lenta, mas bate forte.',
         preview: 2,
-        ticks: [5, 5, 7, 7],
-        active: [10, 17],
-        box: [30, -240, 175, 130],
-        dmg: 7, stun: 16, kb: 260,
+        ticks: [6, 5, 7, 9],
+        active: [11, 18],
+        box: [30, -240, 185, 130],
+        dmg: 9, stun: 17, kb: 280,
       },
       attack2: {
         name: 'Bazuca Tubarão',
-        desc: 'Dispara um míssil que cruza a arena. Lento para recarregar — pule por cima!',
+        desc: 'O míssil sai devagar e vai acelerando até virar um foguete. Pule cedo!',
         preview: 1,
         ticks: [14, 10, 10, 14, 14],
         heavy: true,
-        projectile: { at: 34, fx: 'rocket', speed: 820, height: -175, dmg: 15, stun: 28, kb: 480 },
+        projectile: {
+          at: 34, fx: 'rocket', speed: 400, accel: 2600, maxSpeed: 1500, height: -175,
+          dmg: 18, stun: 30, kb: 520,
+        },
       },
     },
   },
@@ -57,6 +63,9 @@ CK.CHARACTERS = {
     spark: '#7fd4ff',
     idle: [0, 1, 0, 5],
     taunt: [2, 4, 2, 3],
+    role: 'Equilibrado',
+    // o "padrão" do jogo: nada sobra, nada falta
+    stats: { hp: 100, walk: 340, back: 260, air: 330, jump: 1200, weight: 1 },
     attacks: {
       attack1: {
         name: 'Golpe de Aba',
@@ -69,13 +78,13 @@ CK.CHARACTERS = {
       },
       attack2: {
         name: 'Bumerangue Mágico',
-        desc: 'Carrega o boné de energia e o arremessa pela arena. Lento para preparar — pule por cima!',
+        desc: 'Arremessa o boné, que vai, freia e volta para a mão — acerta na ida e na volta.',
         preview: 1,
-        ticks: [12, 14, 18, 12],
+        ticks: [10, 12, 14, 10],
         heavy: true,
         projectile: {
-          at: 26, fx: 'capwave', speed: 780, height: -150, size: [130, 90],
-          style: 'energy', dmg: 15, stun: 28, kb: 480,
+          at: 22, fx: 'capwave', kind: 'boomerang', speed: 950, decel: 700, height: -150,
+          size: [130, 90], spin: 10, style: 'energy', dmg: 11, stun: 24, kb: 380,
         },
       },
     },
@@ -88,25 +97,29 @@ CK.CHARACTERS = {
     spark: '#6fd8ff',
     idle: [0, 1, 2, 1],
     taunt: [3, 4, 5, 4],
+    role: 'Zoneador técnico',
+    // frágil e de pernas curtas, mas controla a distância com o maior alcance de soco e a rajada
+    stats: { hp: 90, walk: 320, back: 250, air: 320, jump: 1180, weight: 1.05 },
     attacks: {
       attack1: {
         name: 'Golpe do Cubo',
-        desc: 'Empurra o cubo carregado contra o rival. Rápido e certeiro.',
+        desc: 'Empurra o cubo carregado contra o rival. Mais lento, mas alcança longe.',
         preview: 2,
-        ticks: [5, 5, 7, 7],
-        active: [10, 17],
-        box: [40, -235, 200, 120],
-        dmg: 7, stun: 16, kb: 260,
+        ticks: [5, 5, 7, 8],
+        active: [10, 18],
+        box: [40, -235, 220, 120],
+        dmg: 7, stun: 16, kb: 240,
       },
       attack2: {
         name: 'Chuva de Cubinhos',
-        desc: 'Desmonta o cubo e dispara as peças pela arena. Lento para preparar — pule por cima!',
+        desc: 'Desmonta o cubo e dispara três peças em alturas diferentes. Difícil desviar de todas!',
         preview: 2,
-        ticks: [12, 14, 14, 14, 12],
+        ticks: [10, 12, 14, 14, 12],
         heavy: true,
         projectile: {
-          at: 26, fx: 'cubewave', speed: 760, height: -165, size: [120, 120], scale: 1.6,
-          style: 'energy', dmg: 15, stun: 28, kb: 480,
+          at: 22, fx: 'cubewave', speed: 820, height: -170, size: [70, 70], scale: 1.2,
+          style: 'energy', dmg: 7, stun: 18, kb: 200,
+          shots: [{ at: 22, height: -170 }, { at: 32, height: -230 }, { at: 42, height: -105 }],
         },
       },
     },
@@ -119,25 +132,28 @@ CK.CHARACTERS = {
     spark: '#ffd23f',
     idle: [0, 1, 2, 1],
     taunt: [3, 4, 5, 4],
+    role: 'Velocista',
+    // a mais rápida e a que pula mais alto, mas é leve e tem pouca vida
+    stats: { hp: 85, walk: 410, back: 320, air: 400, jump: 1350, weight: 1.1 },
     attacks: {
       attack1: {
         name: 'Soco de Luva',
-        desc: 'Soco de goleira afastando o perigo. Rápido e sem cerimônia.',
+        desc: 'O soco mais rápido do jogo. Fraquinho, mas sai na hora.',
         preview: 2,
-        ticks: [5, 5, 7, 7],
-        active: [10, 17],
+        ticks: [4, 4, 6, 6],
+        active: [7, 13],
         box: [30, -240, 190, 120],
-        dmg: 7, stun: 16, kb: 260,
+        dmg: 6, stun: 14, kb: 220,
       },
       attack2: {
         name: 'Tiro de Meta',
-        desc: 'Ajeita a bola e solta uma bomba pela arena. Lento para preparar — pule por cima!',
+        desc: 'Chuta a bola, que vai quicando pela arena. Acerte o tempo do pulo!',
         preview: 3,
         ticks: [12, 10, 10, 14, 12],
         heavy: true,
         projectile: {
-          at: 32, fx: 'ball', speed: 900, height: -150, size: [60, 60], spin: 14,
-          style: 'energy', dmg: 15, stun: 28, kb: 480,
+          at: 32, fx: 'ball', kind: 'bounce', speed: 700, vy: -500, grav: 2400, bounce: 0.78,
+          height: -150, size: [60, 60], spin: 14, style: 'energy', dmg: 13, stun: 26, kb: 450,
         },
       },
     },
@@ -150,25 +166,30 @@ CK.CHARACTERS = {
     spark: '#fff1c9',
     idle: [0, 1, 0, 4],
     taunt: [2, 3, 5, 3],
+    role: 'Tanque',
+    // a mais vida e a mais pesada; lenta e de pulo baixo, avança de cabeça sem ser interrompida
+    stats: { hp: 105, walk: 270, back: 210, air: 260, jump: 1000, weight: 0.8 },
     attacks: {
       attack1: {
         name: 'Cabeçada de Cordeira',
-        desc: 'Avança de cabeça baixa contra o rival. Rápida e teimosa.',
+        desc: 'Avança de cabeça baixa e não para nem levando golpe. Lenta, mas teimosa.',
         preview: 2,
-        ticks: [5, 5, 7, 7],
-        active: [10, 17],
-        box: [30, -250, 185, 130],
-        dmg: 7, stun: 16, kb: 260,
+        ticks: [7, 6, 8, 9],
+        active: [10, 18],
+        lunge: [6, 16, 620],
+        armor: [0, 10],
+        box: [20, -250, 170, 130],
+        dmg: 9, stun: 20, kb: 380,
       },
       attack2: {
         name: 'Bola de Lã',
-        desc: 'Enrola um novelo bem fofo e arremessa pela arena. Lento para preparar — pule por cima!',
+        desc: 'Rola um novelo pelo chão. Quem for pego fica enrolado e lento por um tempo.',
         preview: 2,
         ticks: [12, 12, 14, 14, 12],
         heavy: true,
         projectile: {
-          at: 24, fx: 'woolball', speed: 760, height: -175, size: [90, 90],
-          style: 'energy', dmg: 15, stun: 28, kb: 480,
+          at: 24, fx: 'woolball', speed: 520, height: -55, size: [90, 70], spin: 10,
+          style: 'energy', dmg: 8, stun: 30, kb: 200, status: { slow: 150 },
         },
       },
     },
@@ -181,25 +202,29 @@ CK.CHARACTERS = {
     spark: '#ff5a4a',
     idle: [0, 1, 2, 1],
     taunt: [3, 4, 5, 4],
+    role: 'Controle de espaço',
+    // atributos medianos; empurra o rival para longe e acerta o soco duas vezes
+    stats: { hp: 100, walk: 350, back: 270, air: 340, jump: 1200, weight: 1 },
     attacks: {
       attack1: {
         name: 'Livraço Vermelho',
-        desc: 'Uma pancada com o livro de capa dura. Rápida e cheia de argumentos.',
+        desc: 'Duas pancadas seguidas com o livro de capa dura. Cheio de argumentos.',
         preview: 2,
-        ticks: [5, 5, 7, 7],
-        active: [10, 17],
-        box: [30, -235, 195, 125],
-        dmg: 7, stun: 16, kb: 260,
+        ticks: [5, 5, 8, 8],
+        active: [9, 20],
+        hits: 2, rehit: 7,
+        box: [30, -235, 205, 125],
+        dmg: 4, stun: 16, kb: 140,
       },
       attack2: {
         name: 'Grito de Megafone',
-        desc: 'Puxa o megafone e solta uma onda sonora pela arena. Lento para preparar — pule por cima!',
+        desc: 'Uma onda sonora de curto alcance que cresce e arremessa o rival para longe.',
         preview: 3,
         ticks: [12, 12, 12, 16, 12],
         heavy: true,
         projectile: {
-          at: 24, fx: 'soundwave', speed: 820, height: -190, size: [90, 130], scale: 1.4,
-          style: 'energy', dmg: 15, stun: 28, kb: 480,
+          at: 24, fx: 'soundwave', kind: 'wave', speed: 950, range: 560, grow: 1.8,
+          height: -190, size: [90, 130], scale: 1.4, style: 'energy', dmg: 11, stun: 24, kb: 1000,
         },
       },
     },
@@ -212,25 +237,28 @@ CK.CHARACTERS = {
     spark: '#ffe08a',
     idle: [0, 1, 2, 1],
     taunt: [3, 4, 5, 4],
+    role: 'Resistente',
+    // lento, mas resistente; bate devagar e forte, e a onda de luz recupera vida
+    stats: { hp: 110, walk: 300, back: 240, air: 300, jump: 1100, weight: 0.9 },
     attacks: {
       attack1: {
         name: 'Golpe da Palavra',
-        desc: 'Uma pancada com a Bíblia de capa dura. Rápida e abençoada.',
+        desc: 'Uma pancada pesada com a Bíblia de capa dura. Lenta, mas abençoada.',
         preview: 2,
-        ticks: [5, 5, 7, 7],
-        active: [10, 17],
+        ticks: [7, 5, 8, 10],
+        active: [12, 20],
         box: [30, -235, 195, 125],
-        dmg: 7, stun: 16, kb: 260,
+        dmg: 11, stun: 22, kb: 420,
       },
       attack2: {
         name: 'Onda de Luz',
-        desc: 'Ergue o dedo ao céu e empurra uma onda de luz dourada pela arena. Lento para preparar — pule por cima!',
+        desc: 'Uma onda dourada lenta que, ao acertar, devolve vida ao Pastor.',
         preview: 3,
         ticks: [12, 14, 12, 16, 12],
         heavy: true,
         projectile: {
-          at: 38, fx: 'holywave', speed: 760, height: -165, size: [80, 150], scale: 0.65,
-          style: 'energy', dmg: 15, stun: 28, kb: 480,
+          at: 38, fx: 'holywave', speed: 480, height: -165, size: [70, 120], scale: 0.65,
+          style: 'energy', dmg: 12, stun: 28, kb: 420, heal: 10,
         },
       },
     },
@@ -269,3 +297,11 @@ CK.CHARACTERS = {
 };
 
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);
+
+// atributos do lutador; quem não define "stats" usa os valores padrão abaixo
+CK.statsOf = (def) => ({
+  hp: CK.MAX_HP, walk: CK.WALK, back: CK.BACK, air: CK.AIR, jump: CK.JUMP_V,
+  weight: 1,          // multiplica o empurrão que leva (menor = mais pesado)
+  guard: 100,         // resistência da defesa antes de quebrar
+  ...def.stats,
+});

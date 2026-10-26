@@ -30,6 +30,8 @@ body { display: grid; place-items: center; }
 
 /* o canvas cobre a janela inteira; a área de jogo 1280x720 fica centralizada (ver CK.view) */
 #canvas { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; }
+/* na luta o mouse vira a mira (desenhada no canvas, ver drawAim em main.js) */
+body.aiming, body.aiming * { cursor: none !important; }
 
 .hidden { display: none !important; }
 
@@ -268,6 +270,11 @@ kbd {
 .theme { font-size: calc(var(--u) * 13); text-transform: uppercase; letter-spacing: .15em; color: #cfc9c0; }
 .mk-plate .move { font-size: calc(var(--u) * 15); color: #eee; line-height: 1.5; }
 .mk-plate .move b { color: var(--accent); margin-right: .3em; }
+.mk-plate .stats { margin-bottom: calc(var(--u) * 6); }
+.mk-plate .stat { display: flex; align-items: center; gap: calc(var(--u) * 8); font-size: calc(var(--u) * 12); color: #cfc9c0; text-transform: uppercase; letter-spacing: .08em; }
+.mk-plate .stat span { width: calc(var(--u) * 82); }
+.mk-plate .stat i { flex: 1; height: calc(var(--u) * 7); background: rgba(255, 255, 255, .12); border-radius: calc(var(--u) * 4); overflow: hidden; }
+.mk-plate .stat b { display: block; height: 100%; background: var(--accent); border-radius: inherit; transition: width .2s; }
 
 .select-status { display: flex; gap: calc(var(--u) * 60); font-size: calc(var(--u) * 22); }
 .st b { font-family: var(--display); font-size: 1.3em; margin-right: .3em; }
