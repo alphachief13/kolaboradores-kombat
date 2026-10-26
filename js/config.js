@@ -173,6 +173,37 @@ CK.CHARACTERS = {
       },
     },
   },
+  petista: {
+    name: 'Petista',
+    theme: 'Militante',
+    desc: 'Mochila nas costas, tênis vermelho no pé e um megafone sempre à mão. Não perde um debate — nem uma luta.',
+    color: '#d81e1e',
+    spark: '#ff5a4a',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    attacks: {
+      attack1: {
+        name: 'Livraço Vermelho',
+        desc: 'Uma pancada com o livro de capa dura. Rápida e cheia de argumentos.',
+        preview: 2,
+        ticks: [5, 5, 7, 7],
+        active: [10, 17],
+        box: [30, -235, 195, 125],
+        dmg: 7, stun: 16, kb: 260,
+      },
+      attack2: {
+        name: 'Grito de Megafone',
+        desc: 'Puxa o megafone e solta uma onda sonora pela arena. Lento para preparar — pule por cima!',
+        preview: 3,
+        ticks: [12, 12, 12, 16, 12],
+        heavy: true,
+        projectile: {
+          at: 24, fx: 'soundwave', speed: 820, height: -190, size: [90, 130], scale: 1.4,
+          style: 'energy', dmg: 15, stun: 28, kb: 480,
+        },
+      },
+    },
+  },
 };
 
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);

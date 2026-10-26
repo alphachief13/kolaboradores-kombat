@@ -34,6 +34,7 @@ Depois de cada push, o jogo fica em `https://alphachief13.github.io/kolaboradore
 - **V R** (mago do cubo): golpe do cubo (rápido) e chuva de cubinhos (as peças do cubo cruzam a arena; dá para pular por cima).
 - **Wanessinha** (goleira): soco de luva (rápido) e tiro de meta (bola chutada que cruza a arena; dá para pular por cima).
 - **Dééééééborah** (cordeira): cabeçada de cordeira (rápido) e bola de lã (novelo arremessado que cruza a arena; dá para pular por cima).
+- **Petista** (militante): livraço vermelho (rápido) e grito de megafone (onda sonora que cruza a arena; dá para pular por cima).
 
 ## Estrutura
 

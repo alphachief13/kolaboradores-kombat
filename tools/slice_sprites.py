@@ -63,6 +63,15 @@ SHEETS = {
         "hit":     ("Ovelha em reação de impacto-6.png", 3, 1),
         "ko":      ("Sequência de nocaute da cordeira-7.png", 6, 2),
     },
+    "petista": {
+        "idle":    ("Ciclo de guarda do lutador-1.png", 6, 2),
+        "walk":    ("Ciclo de caminhada do lutador-2.png", 6, 2),
+        "jump":    ("Salto cômico em quatro poses-3.png", 4, 2),
+        "attack1": ("Sequência de ataque com livro vermelho-4.png", 4, 2),
+        "attack2": ("Ataque sônico de megafone em cinco quadros-5.png", 5, 1),
+        "hit":     ("Reação cômica ao golpe-6.png", 3, 1),
+        "ko":      ("Nocaute cômico em seis quadros-7.png", 6, 2),
+    },
 }
 
 
@@ -289,6 +298,16 @@ MANUAL = {
             [(0, 600, 430, 1024)], [(430, 600, 990, 1024)], [(990, 600, 1536, 1024)],
         ],
     },
+    "petista": {
+        "attack2": [
+            [(0, 0, 380, 793)], [(380, 0, 740, 793)], [(740, 0, 1190, 793)],
+            [(1190, 0, 1650, 793)], [(1650, 0, 1983, 793)],
+        ],
+        "ko": [
+            [(0, 0, 500, 560)], [(500, 0, 1000, 560)], [(1000, 0, 1536, 560)],
+            [(0, 600, 520, 1024)], [(520, 600, 1010, 1024)], [(1010, 600, 1536, 1024)],
+        ],
+    },
 }
 
 # objetos recortados da folha (e apagados do quadro) para virarem projéteis
@@ -303,6 +322,8 @@ FX = [
      "box": (1535, 205, 1650, 315), "angle": 0},
     {"name": "woolball", "char": "deborah", "anim": "attack2", "frame": 2,
      "box": (1030, 315, 1190, 415), "angle": 0, "fade": 0.35},
+    {"name": "soundwave", "char": "petista", "anim": "attack2", "frame": 2,
+     "box": (1100, 240, 1190, 400), "angle": 0, "fade": 0.25},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -313,6 +334,7 @@ STAND_H = {
     "vr": {"idle": 491, "walk": 491, "jump": 520, "attack1": 524, "attack2": 618, "hit": 685, "ko": 495},
     "wanessinha": {"idle": 505, "walk": 505, "jump": 600, "attack1": 593, "attack2": 562, "hit": 684, "ko": 505},
     "deborah": {"idle": 476, "walk": 476, "jump": 560, "attack1": 566, "attack2": 395, "hit": 660, "ko": 490},
+    "petista": {"idle": 492, "walk": 492, "jump": 490, "attack1": 490, "attack2": 435, "hit": 565, "ko": 492},
 }
 
 if __name__ == "__main__":
