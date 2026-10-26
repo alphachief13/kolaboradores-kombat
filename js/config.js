@@ -80,6 +80,37 @@ CK.CHARACTERS = {
       },
     },
   },
+  vr: {
+    name: 'V R',
+    theme: 'Mago do cubo',
+    desc: 'Toga de formatura, cachos no capricho e um cubo mágico que gira sozinho na palma da mão.',
+    color: '#2f6bff',
+    spark: '#6fd8ff',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    attacks: {
+      attack1: {
+        name: 'Golpe do Cubo',
+        desc: 'Empurra o cubo carregado contra o rival. Rápido e certeiro.',
+        preview: 2,
+        ticks: [5, 5, 7, 7],
+        active: [10, 17],
+        box: [40, -235, 200, 120],
+        dmg: 7, stun: 16, kb: 260,
+      },
+      attack2: {
+        name: 'Chuva de Cubinhos',
+        desc: 'Desmonta o cubo e dispara as peças pela arena. Lento para preparar — pule por cima!',
+        preview: 2,
+        ticks: [12, 14, 14, 14, 12],
+        heavy: true,
+        projectile: {
+          at: 26, fx: 'cubewave', speed: 760, height: -165, size: [120, 120], scale: 1.6,
+          style: 'energy', dmg: 15, stun: 28, kb: 480,
+        },
+      },
+    },
+  },
 };
 
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);

@@ -36,6 +36,15 @@ SHEETS = {
         "hit":     ("Mascote do boné azul_ reação ao impacto-6.png", 3, 1),
         "ko":      ("Seis mascotes de boné azul isolados-11.png", 6, 2),
     },
+    "vr": {
+        "idle":    ("Feiticeiro acadêmico com cubo mágico-1.png", 6, 2),
+        "walk":    ("Caminhada mágica com cubo flutuante-2.png", 6, 2),
+        "jump":    ("Salto mágico com cubo colorido-3.png", 4, 2),
+        "attack1": ("Golpe rápido do cubo mágico-4.png", 4, 2),
+        "attack2": ("Truque mágico do cubo multicolorido-5.png", 5, 1),
+        "hit":     ("Reações cômicas do mago com cubo mágico-6.png", 3, 1),
+        "ko":      ("Mago derrotado com cubo mágico flutuante-7.png", 6, 2),
+    },
 }
 
 
@@ -227,6 +236,16 @@ MANUAL = {
         [(0, 0, 537, 513)], [(537, 0, 1060, 513)], [(1060, 0, 1536, 513)],
         [(0, 513, 520, 1024)], [(520, 513, 1036, 1024)], [(1036, 513, 1536, 1024)],
     ]},
+    "vr": {
+        "attack2": [
+            [(0, 0, 395, 420), (0, 420, 355, 793)], [(355, 0, 762, 380), (355, 380, 742, 793)],
+            [(742, 0, 1245, 420), (742, 420, 1160, 793)], [(1160, 0, 1630, 793)], [(1630, 0, 1983, 793)],
+        ],
+        "ko": [
+            [(0, 0, 500, 560)], [(500, 0, 1000, 560)], [(1000, 0, 1536, 560)],
+            [(0, 600, 505, 1024)], [(505, 600, 1030, 1024)], [(1030, 600, 1536, 1024)],
+        ],
+    },
 }
 
 # objetos recortados da folha (e apagados do quadro) para virarem projéteis
@@ -235,6 +254,8 @@ FX = [
      "box": (440, 520, 615, 615), "angle": -14},
     {"name": "capwave", "char": "bonezinho", "anim": "attack2", "frame": 2,
      "box": (1295, 335, 1620, 575), "angle": 0, "fade": 0.2},
+    {"name": "cubewave", "char": "vr", "anim": "attack2", "frame": 2,
+     "box": (1095, 140, 1245, 340), "angle": 0, "fade": 0.3},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -242,6 +263,7 @@ FX = [
 STAND_H = {
     "soldado": {"idle": 485, "walk": 485, "jump": 520, "attack1": 520, "attack2": 470, "hit": 620, "ko": 480},
     "bonezinho": {"idle": 480, "walk": 465, "jump": 520, "attack1": 520, "attack2": 440, "hit": 640, "ko": 490},
+    "vr": {"idle": 491, "walk": 491, "jump": 520, "attack1": 524, "attack2": 618, "hit": 685, "ko": 495},
 }
 
 if __name__ == "__main__":
