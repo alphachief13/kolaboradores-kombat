@@ -509,7 +509,7 @@
       for (const anim of Object.values(window.FRAMES[id])) for (const f of anim) srcs.push(f.src);
     }
     for (const fx of Object.values(window.FX)) srcs.push(fx.src);
-    srcs.push(CK.Stage.SRC);
+    srcs.push(...CK.Stage.SRCS);
     let done = 0;
     return Promise.all(srcs.map((src) => new Promise((res) => {
       const img = new Image();

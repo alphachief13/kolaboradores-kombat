@@ -76,7 +76,7 @@ js/fighter.js       máquina de estados, física, hitbox/hurtbox, animação
 js/ai.js            oponente controlado pelo computador (gera entradas como um jogador)
 js/game.js          partida: contagem, colisão entre lutadores, projéteis, K.O., tempo, revanche
 js/effects.js       partículas de impacto, explosão, poeira, tremor de tela
-js/stage.js         arena (foto em assets/stage/faceponto.jpg)
+js/stage.js         arenas (fotos em assets/stage/, sorteadas a cada luta)
 js/audio.js         efeitos sonoros sintetizados (WebAudio)
 js/net.js           transporte da rede (PeerJS/WebRTC): criar sala, entrar, enviar mensagens
 js/online.js        modo em rede: sala, 1x1, torneio, espectadores (o anfitrião roda a luta)

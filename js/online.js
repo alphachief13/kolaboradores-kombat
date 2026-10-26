@@ -220,6 +220,7 @@ CK.Online = (() => {
   function newGame(match, roundTime) {
     const g = new CK.Game(match.picks[0], match.picks[1], { ...CK.App.settings, roundTime }, false);
     g.names = match.names;
+    if (match.stage != null) g.stage = match.stage;
     return g;
   }
 
@@ -362,6 +363,7 @@ CK.Online = (() => {
       score: [0, 0],
       tourney,
       need: tourney ? Math.ceil(S.lobby.bestOf / 2) : 0,
+      stage: CK.Stage.pick(),
     };
   }
 

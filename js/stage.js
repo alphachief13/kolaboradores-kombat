@@ -1,7 +1,15 @@
-// Arena: arte da fachada da Faceponto/RoboEduc, cobrindo a janela inteira (recorta o que sobrar).
+// Arenas: fotos cobrindo a janela inteira (recorta o que sobrar); cada luta sorteia uma.
 CK.Stage = (() => {
-  const SRC = 'assets/stage/faceponto.jpg';
-  let bg = null;
+  const SRCS = [
+    'assets/stage/faceponto.jpg',   // fachada da Faceponto/RoboEduc
+    'assets/stage/redemais.jpg',    // Supermercado RedeMAIS Veneza
+    'assets/stage/congresso.jpg',   // Congresso Nacional ao pôr do sol
+    'assets/stage/praia.jpg',       // praia de Ponta Negra com o Morro do Careca
+    'assets/stage/onibus.jpg',      // ônibus urbano de Natal
+    'assets/stage/estadio.jpg',     // Arena das Dunas lotada
+    'assets/stage/plenario.jpg',    // plenário do Senado em votação
+  ];
+  const bgs = [];
 
   // monta o fundo no tamanho do canvas (CK.view), em modo "cover" ancorado embaixo
   function build(img, v) {
@@ -33,11 +41,13 @@ CK.Stage = (() => {
   }
 
   return {
-    SRC,
-    draw(ctx) {
+    SRCS,
+    pick: () => Math.floor(Math.random() * SRCS.length),
+    draw(ctx, idx = 0) {
       const v = CK.view;
-      const img = CK.images[SRC];
-      if ((!bg || bg.width !== v.w || bg.height !== v.h) && img && img.complete && img.naturalWidth) bg = build(img, v);
+      const img = CK.images[SRCS[idx]];
+      let bg = bgs[idx];
+      if ((!bg || bg.width !== v.w || bg.height !== v.h) && img && img.complete && img.naturalWidth) bg = bgs[idx] = build(img, v);
       if (bg) ctx.drawImage(bg, -v.ox, -v.oy);
       else {
         ctx.fillStyle = '#6fa6dc';

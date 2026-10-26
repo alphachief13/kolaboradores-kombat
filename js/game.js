@@ -19,6 +19,7 @@ CK.Game = class Game {
     this.settings = settings;
     this.demo = demo;
     this.bot = botLevel ? new CK.Bot(botLevel) : null;   // controla o jogador 2
+    this.stage = CK.Stage.pick();   // arena (em rede, vem da partida)
     this.names = null;        // nomes dos jogadores (partida em rede)
     this.events = null;       // anfitrião em rede: guarda os eventos de cada tick para os outros
     this.onFinish = null;
@@ -437,7 +438,7 @@ CK.Game = class Game {
   }
 
   draw(ctx, time) {
-    CK.Stage.draw(ctx, time);
+    CK.Stage.draw(ctx, this.stage);
     ctx.save();
     const sh = CK.Effects.shake;
     if (sh) ctx.translate((Math.random() - 0.5) * sh, (Math.random() - 0.5) * sh);
