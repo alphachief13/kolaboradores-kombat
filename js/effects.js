@@ -40,6 +40,22 @@ CK.Effects = (() => {
       }
     },
 
+    // variante elétrica (azul) da explosão e do rastro, para projéteis de energia
+    energyBurst(x, y, color) {
+      add({ type: 'flash', x, y, size: 160, max: 0.16 });
+      add({ type: 'ring', x, y, size: 150, color, max: 0.35 });
+      add({ type: 'ring', x, y, size: 90, color: '#fff', max: 0.25 });
+      for (let i = 0; i < 30; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = rand(250, 900);
+        add({ type: 'spark', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, color: i % 3 ? color : '#fff', size: rand(3, 8), max: rand(0.25, 0.5) });
+      }
+    },
+
+    energyTrail(x, y, color) {
+      add({ type: 'spark', x: x + rand(-20, 20), y: y + rand(-30, 30), vx: rand(-80, 80), vy: rand(-80, 80), color, size: rand(2, 5), max: rand(0.15, 0.3) });
+    },
+
     trail(x, y) {
       add({ type: 'smoke', x, y: y + rand(-6, 6), vx: rand(-30, 30), vy: rand(-40, -10), size: rand(10, 20), max: rand(0.4, 0.7) });
     },

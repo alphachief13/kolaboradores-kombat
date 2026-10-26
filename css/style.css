@@ -25,11 +25,11 @@ body { display: grid; place-items: center; }
   position: relative;
   width: 1280px;
   height: 720px;
-  overflow: hidden;
   user-select: none;
 }
 
-#canvas { display: block; width: 100%; height: 100%; }
+/* o canvas cobre a janela inteira; a área de jogo 1280x720 fica centralizada (ver CK.view) */
+#canvas { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; }
 
 .hidden { display: none !important; }
 
@@ -43,10 +43,10 @@ body { display: grid; place-items: center; }
   justify-content: center;
   gap: calc(var(--u) * 18);
 }
-.screen.dim { background: rgba(8, 2, 10, 0.55); }
+.screen.dim { background: rgba(8, 2, 10, 0.55); box-shadow: 0 0 0 100vmax rgba(8, 2, 10, 0.55); }
 
-#screen-menu { background: linear-gradient(90deg, rgba(8,2,10,.2), rgba(8,2,10,.7) 35%, rgba(8,2,10,.7) 65%, rgba(8,2,10,.2)); }
-#screen-select, #screen-controls, #screen-settings, #screen-loading { background: rgba(8, 2, 10, 0.72); }
+#screen-menu { position: fixed; background: linear-gradient(90deg, rgba(8,2,10,.2), rgba(8,2,10,.7) 35%, rgba(8,2,10,.7) 65%, rgba(8,2,10,.2)); }
+#screen-controls, #screen-settings, #screen-loading { background: rgba(8, 2, 10, 0.72); box-shadow: 0 0 0 100vmax rgba(8, 2, 10, 0.72); }
 
 .loading { font: calc(var(--u) * 48) var(--display); letter-spacing: .05em; }
 
@@ -142,57 +142,130 @@ kbd {
 .row select, .row input { font-size: calc(var(--u) * 20); accent-color: var(--gold); }
 .row input[type=checkbox] { width: calc(var(--u) * 26); height: calc(var(--u) * 26); }
 
-/* ---------- seleção ---------- */
-#cards { display: flex; gap: calc(var(--u) * 36); }
-
-.card {
-  position: relative;
-  width: calc(var(--u) * 520);
-  display: flex;
+/* ---------- seleção (estilo Mortal Kombat clássico) ---------- */
+#screen-select {
+  position: fixed;  /* cobre a janela inteira, não só a área de jogo */
+  --stone: #77736e;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.4 0 0 0 -.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"), radial-gradient(ellipse at 50% 45%, #8a8680, #55524e 85%);
+  background-size: calc(var(--u) * 240), cover;
   gap: calc(var(--u) * 10);
-  background: linear-gradient(160deg, rgba(60, 20, 60, .95), rgba(20, 6, 22, .95));
-  border: calc(var(--u) * 4) solid #4a2a50;
-  padding: calc(var(--u) * 16);
-  cursor: pointer;
-  transition: transform .12s, border-color .12s, box-shadow .12s;
 }
-.card:hover { transform: translateY(calc(var(--u) * -4)); }
-.card.sel-p1 { border-color: var(--p1); box-shadow: 0 0 calc(var(--u) * 24) var(--p1); }
-.card.sel-p2 { border-color: var(--p2); box-shadow: 0 0 calc(var(--u) * 24) var(--p2); }
-.card.sel-p1.sel-p2 { border-color: #c77dff; box-shadow: calc(var(--u) * -10) 0 calc(var(--u) * 24) var(--p1), calc(var(--u) * 10) 0 calc(var(--u) * 24) var(--p2); }
+/* faixas pretas de cima e de baixo, como na tela do arcade */
+#screen-select::before, #screen-select::after {
+  content: ''; position: absolute; left: 0; right: 0; height: calc(var(--u) * 26); background: #000;
+}
+#screen-select::before { top: 0; }
+#screen-select::after { bottom: 0; }
 
-.tags { position: absolute; top: calc(var(--u) * -18); left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 calc(var(--u) * 12); }
+.mk-title {
+  margin: 0;
+  font: calc(var(--u) * 62) var(--display);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #ffe600;
+  -webkit-text-stroke: calc(var(--u) * 2) #3a2400;
+  text-shadow: calc(var(--u) * 3) calc(var(--u) * 4) 0 #000, 0 0 calc(var(--u) * 18) rgba(255, 140, 0, .55);
+}
+
+/* moldura em relevo: claro em cima/esquerda, escuro embaixo/direita */
+.mk-board, .card, .emblem {
+  border: calc(var(--u) * 5) solid;
+  border-color: #b4b0aa #3c3a37 #3c3a37 #b4b0aa;
+}
+.mk-arena { display: flex; align-items: center; gap: calc(var(--u) * 24); }
+.mk-board {
+  padding: calc(var(--u) * 16);
+  background: rgba(60, 58, 55, .35);
+  box-shadow: inset 0 0 0 calc(var(--u) * 6) var(--stone), inset 0 0 0 calc(var(--u) * 10) #3c3a37,
+    0 calc(var(--u) * 6) calc(var(--u) * 14) rgba(0, 0, 0, .45);
+}
+#cards { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--u) * 14); max-width: calc(var(--u) * 560); }
+
+.card, .emblem {
+  position: relative;
+  width: calc(var(--u) * 160);
+  height: calc(var(--u) * 186);
+  overflow: hidden;
+  background: #222;
+}
+.card {
+  cursor: pointer;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent) 80%, #fff 10%), color-mix(in srgb, var(--accent) 35%, #000) 75%);
+}
+/* retrato: recorte do quadro parado, mostrando cabeça e ombros */
+.card img {
+  position: absolute;
+  filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 4) rgba(0, 0, 0, .6));
+}
+.card::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 calc(var(--u) * 20) rgba(0, 0, 0, .7); }
+
+.emblem { display: grid; place-items: center; background: var(--stone); }
+.emblem span {
+  display: grid; place-items: center;
+  width: calc(var(--u) * 120); height: calc(var(--u) * 120);
+  border-radius: 50%;
+  border: calc(var(--u) * 6) solid; border-color: #3c3a37 #b4b0aa #b4b0aa #3c3a37;
+  background: radial-gradient(circle at 40% 35%, #8f8b85, #5b5853);
+  font: calc(var(--u) * 64) var(--display);
+  color: #6a6762;
+  text-shadow: calc(var(--u) * -2) calc(var(--u) * -2) 0 #2e2c29, calc(var(--u) * 2) calc(var(--u) * 2) 0 #aaa69f;
+}
+
+/* cursores dos jogadores: piscam enquanto escolhem, fixam ao confirmar */
+.card.sel-p1, .card.sel-p2 { outline: calc(var(--u) * 6) solid var(--cur); outline-offset: calc(var(--u) * -6); }
+.card.sel-p1 { --cur: var(--p1); }
+.card.sel-p2 { --cur: var(--p2); }
+.card.sel-p1.sel-p2 { --cur: #c77dff; }
+.card.sel-p1:not(.ok-p1), .card.sel-p2:not(.ok-p2) { animation: mk-blink .5s steps(1) infinite; }
+.card.ok-p1, .card.ok-p2 { animation: mk-flash .35s ease-out; }
+@keyframes mk-blink { 50% { outline-color: #fff; } }
+@keyframes mk-flash { from { filter: brightness(2.2); } }
+
 .tag {
-  font: calc(var(--u) * 24) var(--display);
-  padding: 0 calc(var(--u) * 12);
-  border: calc(var(--u) * 3) solid var(--ink);
+  position: absolute; top: calc(var(--u) * 6); z-index: 1;
+  font: calc(var(--u) * 22) var(--display);
+  padding: 0 calc(var(--u) * 6);
+  border: calc(var(--u) * 2) solid var(--ink);
   visibility: hidden;
 }
-.tag.p1 { background: var(--p1); }
-.tag.p2 { background: var(--p2); }
+.tag.p1 { left: calc(var(--u) * 6); background: var(--p1); }
+.tag.p2 { right: calc(var(--u) * 6); background: var(--p2); }
 .card.sel-p1 .tag.p1, .card.sel-p2 .tag.p2 { visibility: visible; }
 .card.ok-p1 .tag.p1::after, .card.ok-p2 .tag.p2::after { content: ' ✓'; }
 
-.portrait {
-  flex: 0 0 calc(var(--u) * 190);
-  height: calc(var(--u) * 300);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%);
+/* lutadores escolhidos, de corpo inteiro, nas laterais */
+.mk-side { width: calc(var(--u) * 260); display: flex; flex-direction: column; align-items: center; }
+.mk-fig {
+  position: relative;
+  width: 100%;
+  height: calc(var(--u) * 340);
+  background: radial-gradient(ellipse at 50% 92%, rgba(0, 0, 0, .55), transparent 45%);
 }
-.portrait img { max-width: 100%; max-height: 100%; filter: drop-shadow(0 calc(var(--u) * 6) calc(var(--u) * 6) rgba(0,0,0,.6)); }
+.mk-side.p2 .mk-fig { transform: scaleX(-1); }
+.mk-fig img { position: absolute; filter: drop-shadow(0 0 calc(var(--u) * 10) rgba(0, 0, 0, .5)); }
+.mk-side.ok .mk-fig img { filter: drop-shadow(0 0 calc(var(--u) * 14) var(--accent)); }
 
-.info { flex: 1; min-width: 0; }
-.info h3 { margin: 0; font: calc(var(--u) * 40) var(--display); letter-spacing: .04em; color: var(--accent); -webkit-text-stroke: calc(var(--u) * 1) var(--ink); }
-.theme { font-size: calc(var(--u) * 14); text-transform: uppercase; letter-spacing: .15em; color: #d8c6d8; }
-.info p { font-size: calc(var(--u) * 15); line-height: 1.35; margin: calc(var(--u) * 8) 0; color: #eee; }
-
-.moves { display: flex; flex-direction: column; gap: calc(var(--u) * 8); }
-.move { display: flex; gap: calc(var(--u) * 10); align-items: center; background: rgba(0,0,0,.3); padding: calc(var(--u) * 6); }
-.move img { width: calc(var(--u) * 70); height: calc(var(--u) * 60); object-fit: contain; flex: none; }
-.move b { display: block; font-size: calc(var(--u) * 14); color: var(--gold); }
-.move span { font-size: calc(var(--u) * 13); color: #d8c6d8; line-height: 1.3; }
+.mk-plate {
+  width: 100%;
+  margin-top: calc(var(--u) * 6);
+  padding: calc(var(--u) * 8) calc(var(--u) * 12);
+  text-align: center;
+  background: rgba(20, 18, 16, .78);
+  border: calc(var(--u) * 3) solid; border-color: #b4b0aa #3c3a37 #3c3a37 #b4b0aa;
+}
+.mk-plate h3 {
+  margin: 0;
+  font: calc(var(--u) * 34) var(--display);
+  letter-spacing: .05em;
+  color: #ffe600;
+  text-shadow: calc(var(--u) * 2) calc(var(--u) * 3) 0 #000;
+}
+.mk-side.p1 .mk-plate { box-shadow: 0 calc(var(--u) * -4) 0 var(--p1) inset; }
+.mk-side.p2 .mk-plate { box-shadow: 0 calc(var(--u) * -4) 0 var(--p2) inset; }
+.mk-plate .theme { margin-bottom: calc(var(--u) * 6); }
+.theme { font-size: calc(var(--u) * 13); text-transform: uppercase; letter-spacing: .15em; color: #cfc9c0; }
+.mk-plate .move { font-size: calc(var(--u) * 15); color: #eee; line-height: 1.5; }
+.mk-plate .move b { color: var(--accent); margin-right: .3em; }
 
 .select-status { display: flex; gap: calc(var(--u) * 60); font-size: calc(var(--u) * 22); }
 .st b { font-family: var(--display); font-size: 1.3em; margin-right: .3em; }
@@ -299,3 +372,5 @@ kbd {
 .rematch button.p1 { background: linear-gradient(180deg, #a8dcff, var(--p1)); }
 .rematch button.p2 { background: linear-gradient(180deg, #ffb0b8, var(--p2)); }
 .rematch button.ok { filter: saturate(.4) brightness(1.3); }
+
+#screen-select .hint, #screen-select .select-status { color: #fff; text-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 3) #000, 0 0 calc(var(--u) * 6) #000; }

@@ -55,6 +55,12 @@ CK.Input = (() => {
       return state;
     },
     get(i) { return state[i]; },
+    // junta os dois esquemas de controle (modo contra o computador: o jogador usa qualquer um)
+    merge(a, b) {
+      const s = {};
+      for (const k of Object.keys(a)) s[k] = a[k] || b[k];
+      return s;
+    },
     clear() { pressed.clear(); },
   };
 })();

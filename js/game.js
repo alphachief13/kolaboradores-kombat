@@ -2,10 +2,11 @@
 const NO_INPUT = { left: false, right: false, up: false, a1: false, a2: false, upP: false, a1P: false, a2P: false };
 
 CK.Game = class Game {
-  constructor(charA, charB, settings, demo = false) {
+  constructor(charA, charB, settings, demo = false, botLevel = null) {
     this.fighters = [new CK.Fighter(0, charA), new CK.Fighter(1, charB)];
     this.settings = settings;
     this.demo = demo;
+    this.bot = botLevel ? new CK.Bot(botLevel) : null;   // controla o jogador 2
     this.reset();
   }
 
@@ -22,6 +23,7 @@ CK.Game = class Game {
     this.controlsEnabled = false;
     this.rematch = [false, false];
     this.winner = null;
+    if (this.bot) this.bot.reset();
     if (!this.demo) {
       CK.UI.hideResult();
       CK.UI.updateHud(this);
@@ -32,6 +34,7 @@ CK.Game = class Game {
     CK.Effects.update(CK.DT);
     this.phaseT++;
     if (this.slowmo > 0) this.slowmo--;
+    if (this.bot) inputs = [CK.Input.merge(inputs[0], inputs[1]), NO_INPUT];
 
     if (this.phase === 'countdown') {
       const steps = { 1: '3', 50: '2', 100: '1' };
@@ -51,6 +54,7 @@ CK.Game = class Game {
     if (this.hitstop > 0) { this.hitstop--; return; }
 
     const [a, b] = this.fighters;
+    if (this.bot) inputs[1] = this.bot.think(b, a, this);
     a.tick(this.controlsEnabled ? inputs[0] : NO_INPUT, b, this);
     b.tick(this.controlsEnabled ? inputs[1] : NO_INPUT, a, this);
     this.separate(a, b);
@@ -91,23 +95,31 @@ CK.Game = class Game {
     const s = CK.SCALE;
     this.projectiles.push({
       owner: f, dir: f.facing, fx, p,
+      px: f.x,   // posição anterior: a colisão varre de px até x (não atravessa quem está colado)
       x: f.x + f.facing * (fx.dx + fx.w / 2) * s,
       y: f.y + (fx.dy + fx.h / 2) * s,
     });
-    CK.Sfx.play('rocket');
+    CK.Sfx.play(p.style === 'energy' ? 'zap' : 'rocket');
   }
 
   updateProjectiles() {
     for (const pr of this.projectiles) {
       pr.x += pr.dir * pr.p.speed * CK.DT;
       pr.y += (CK.GROUND + pr.p.height - pr.y) * 0.12;
-      CK.Effects.trail(pr.x - pr.dir * 55, pr.y);
+      const energy = pr.p.style === 'energy';
+      if (energy) CK.Effects.energyTrail(pr.x - pr.dir * 70, pr.y, pr.owner.def.spark);
+      else CK.Effects.trail(pr.x - pr.dir * 55, pr.y);
       const target = this.fighters[1 - pr.owner.idx];
       const hurt = target.hurtbox();
-      if (hurt && CK.overlap({ x: pr.x - 35, y: pr.y - 14, w: 70, h: 28 }, hurt)) {
+      const [w, h] = pr.p.size || [70, 28];
+      const x0 = Math.min(pr.px, pr.x) - w / 2;
+      const sweep = { x: x0, y: pr.y - h / 2, w: Math.max(pr.px, pr.x) + w / 2 - x0, h };
+      pr.px = pr.x;
+      if (hurt && CK.overlap(sweep, hurt)) {
         pr.dead = true;
-        CK.Effects.explosion(pr.x, pr.y);
-        CK.Sfx.play('boom');
+        if (energy) CK.Effects.energyBurst(pr.x, pr.y, pr.owner.def.spark);
+        else CK.Effects.explosion(pr.x, pr.y);
+        CK.Sfx.play(energy ? 'zapHit' : 'boom');
         this.hit(pr.owner, target, pr.p, pr.x, pr.y, pr.dir);
       } else if (pr.x < -150 || pr.x > CK.W + 150) {
         pr.dead = true;
@@ -152,9 +164,13 @@ CK.Game = class Game {
     let title = 'Empate!';
     if (this.winner) {
       this.winner.setState('win');
-      title = `${this.winner.def.name} vence!`;
+      title = this.bot ? (this.winner.idx === 0 ? 'Você venceu!' : 'Você perdeu!') : `${this.winner.def.name} vence!`;
     }
     CK.UI.showResult(title, this.winner ? this.winner.idx : -1);
+    if (this.bot) {          // o computador sempre aceita a revanche
+      this.rematch[1] = true;
+      CK.UI.updateRematch(this.rematch);
+    }
   }
 
   acceptRematch(i) {

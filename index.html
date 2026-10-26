@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cartoon Kombat</title>
+  <title>Kolaboradores Kombat</title>
+  <meta name="description" content="Kolaboradores Kombat: jogo de luta 2D no navegador, contra a CPU ou com um amigo.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%8A%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&display=swap">
   <link rel="stylesheet" href="css/style.css">
@@ -33,13 +35,14 @@
 
     <!-- Menu principal -->
     <section id="screen-menu" class="screen hidden">
-      <h1 class="logo"><span>Cartoon</span><span>Kombat</span></h1>
+      <h1 class="logo"><span>Kolaboradores</span><span>Kombat</span></h1>
       <nav class="menu">
-        <button data-action="play">Jogar</button>
+        <button data-action="play-cpu">1 Jogador · vs CPU</button>
+        <button data-action="play-pvp">2 Jogadores</button>
         <button data-action="controls">Controles</button>
         <button data-action="settings">Configurações</button>
       </nav>
-      <p class="foot">Multiplayer local · 2 jogadores no mesmo teclado ou com controles</p>
+      <p class="foot">Lute contra o computador ou com um amigo no mesmo teclado ou com controles</p>
     </section>
 
     <!-- Controles -->
@@ -62,6 +65,7 @@
             <p><kbd>L</kbd> ou <kbd>Num 2</kbd> ataque forte</p>
           </div>
         </div>
+        <p class="hint">Contra a CPU, você pode usar os controles de qualquer um dos dois jogadores.</p>
         <p class="hint">Controles de videogame: direcional/analógico anda, <b>A</b> pula, <b>X</b> ataque rápido, <b>Y</b>/<b>B</b> ataque forte. <kbd>Esc</kbd> pausa.</p>
         <button data-action="back">Voltar</button>
       </div>
@@ -78,6 +82,13 @@
             <option value="0">Sem limite</option>
           </select>
         </label>
+        <label class="row">Dificuldade da CPU
+          <select id="opt-diff">
+            <option value="easy">Fácil</option>
+            <option value="normal">Normal</option>
+            <option value="hard">Difícil</option>
+          </select>
+        </label>
         <label class="row">Som <input type="checkbox" id="opt-sound"></label>
         <label class="row">Mostrar hitboxes <input type="checkbox" id="opt-boxes"></label>
         <button data-action="back">Voltar</button>
@@ -86,13 +97,17 @@
 
     <!-- Seleção de personagem -->
     <section id="screen-select" class="screen hidden">
-      <h2 class="title">Escolha seu lutador</h2>
-      <div id="cards"></div>
+      <h2 class="mk-title">Escolha seu lutador</h2>
+      <div class="mk-arena">
+        <div class="mk-side p1" id="side-p1"><div class="mk-fig"><img alt=""></div><div class="mk-plate"></div></div>
+        <div class="mk-board"><div id="cards"></div></div>
+        <div class="mk-side p2" id="side-p2"><div class="mk-fig"><img alt=""></div><div class="mk-plate"></div></div>
+      </div>
       <div class="select-status">
         <div class="st p1" id="st-p1"></div>
         <div class="st p2" id="st-p2"></div>
       </div>
-      <p class="hint">J1: <kbd>A</kbd>/<kbd>D</kbd> escolhe, <kbd>F</kbd> confirma · J2: <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>K</kbd> confirma · <kbd>Esc</kbd> volta · ou clique no card</p>
+      <p class="hint" id="select-hint">J1: <kbd>A</kbd>/<kbd>D</kbd> escolhe, <kbd>F</kbd> confirma · J2: <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>K</kbd> confirma · <kbd>Esc</kbd> volta · ou clique no retrato</p>
     </section>
 
     <!-- Pausa -->
@@ -108,7 +123,7 @@
     <section id="screen-result" class="screen hidden">
       <div class="panel">
         <h2 id="result-title"></h2>
-        <p class="hint">Revanche? Cada jogador aperta seu ataque rápido (<kbd>F</kbd> / <kbd>K</kbd>) ou clica.</p>
+        <p class="hint" id="result-hint">Revanche? Cada jogador aperta seu ataque rápido (<kbd>F</kbd> / <kbd>K</kbd>) ou clica.</p>
         <div class="rematch">
           <button class="p1" data-action="rematch-p1">J1: aceitar</button>
           <button class="p2" data-action="rematch-p2">J2: aceitar</button>
@@ -128,6 +143,7 @@
   <script src="js/effects.js"></script>
   <script src="js/stage.js"></script>
   <script src="js/fighter.js"></script>
+  <script src="js/ai.js"></script>
   <script src="js/game.js"></script>
   <script src="js/main.js"></script>
 </body>

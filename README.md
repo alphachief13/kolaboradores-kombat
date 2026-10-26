@@ -1,10 +1,10 @@
 # kolaboradores-kombat
 
-**Cartoon Kombat**: jogo de luta 2D 1x1 para navegador, multiplayer local (dois jogadores no mesmo teclado ou com controles). HTML + CSS + JavaScript puro, sem build e sem servidor.
+**Kolaboradores Kombat**: jogo de luta 2D 1x1 para navegador, contra a CPU ou multiplayer local (dois jogadores no mesmo teclado ou com controles). HTML + CSS + JavaScript puro, sem build e sem servidor.
 
 ## Como jogar
 
-Abra o `index.html` no navegador. Também roda servido por qualquer servidor estático (`npx serve .`, `python3 -m http.server`).
+Jogue em `https://alphachief13.github.io/kolaboradores-kombat/` ou abra o `index.html` direto no navegador (também roda em qualquer servidor estático).
 
 | Ação           | Jogador 1 | Jogador 2         | Controle   |
 |----------------|-----------|-------------------|------------|
@@ -14,12 +14,23 @@ Abra o `index.html` no navegador. Também roda servido por qualquer servidor est
 | Ataque forte   | `G`       | `L` ou `Num 2`    | Y / B      |
 | Pausar         | `Esc`     | `Esc`             |            |
 
+Modos: **1 Jogador · vs CPU** (o jogador 2 é controlado pelo computador; dificuldade Fácil, Normal ou Difícil em Configurações; o jogador pode usar as teclas de qualquer um dos dois lados) e **2 Jogadores** (local).
+
 Fluxo: menu → seleção de personagem (cada jogador escolhe e confirma) → contagem 3, 2, 1, FIGHT! → luta → K.O. → revanche quando os dois aceitam.
+
+## Publicar no GitHub Pages
+
+O jogo é estático (HTML/CSS/JS puro, caminhos relativos), então roda direto no `github.io`.
+O workflow `.github/workflows/pages.yml` publica a cada push na `main`, levando só o que o navegador carrega
+(`index.html`, `css/`, `js/`, `assets/`). As folhas originais em `sprites/` e o `tools/` ficam fora do site.
+
+Uma vez só: no GitHub, **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Depois de cada push, o jogo fica em `https://alphachief13.github.io/kolaboradores-kombat/`.
 
 ## Personagens
 
 - **Cabo Queijo** (militar): cassetete tático (rápido) e bazuca tubarão (míssil que cruza a arena; dá para pular por cima).
-- **Chef Calabresa** (cozinha italiana): fatia quente (rápido) e frigideira bolonhesa (golpe forte de médio alcance).
+- **Bonézinho** (mestre dos bonés): golpe de aba (rápido) e bumerangue mágico (boné de energia que cruza a arena; dá para pular por cima).
 
 ## Estrutura
 
@@ -29,9 +40,10 @@ css/style.css       visual (a escala acompanha a janela pela variável --u)
 js/config.js        constantes e dados dos personagens/ataques (dano, alcance, frames)
 js/input.js         teclado + Gamepad API
 js/fighter.js       máquina de estados, física, hitbox/hurtbox, animação
+js/ai.js            oponente controlado pelo computador (gera entradas como um jogador)
 js/game.js          partida: contagem, colisão entre lutadores, projéteis, K.O., tempo, revanche
 js/effects.js       partículas de impacto, explosão, poeira, tremor de tela
-js/stage.js         arena desenhada no canvas
+js/stage.js         arena (foto em assets/stage/faceponto.jpg)
 js/audio.js         efeitos sonoros sintetizados (WebAudio)
 js/main.js          telas, seleção, configurações, laço principal (60 ticks/s fixos)
 sprites/            folhas de sprite originais

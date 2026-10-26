@@ -27,14 +27,14 @@ SHEETS = {
         "hit":     (P + "17_00_37-6.png", 3, 1),
         "ko":      (P + "17_00_37-7.png", 6, 2),
     },
-    "chef": {
-        "idle":    (P + "17_04_52-1.png", 6, 2),
-        "walk":    (P + "17_04_53-2.png", 6, 2),
-        "jump":    (P + "17_04_54-3.png", 4, 2),
-        "attack1": (P + "17_04_55-4.png", 4, 2),
-        "attack2": (P + "17_04_56-5.png", 5, 2),
-        "hit":     (P + "17_04_56-6.png", 3, 1),
-        "ko":      (P + "17_04_57-7.png", 6, 2),
+    "bonezinho": {
+        "idle":    ("Seis mascotes em grade transparente-8.png", 6, 2),
+        "walk":    ("Folha de sprites do mascote caminhando-10.png", 6, 2),
+        "jump":    ("Salto lateral do mascote Faceponto-3.png", 4, 2),
+        "attack1": ("Golpe de aba em quatro quadros-4.png", 4, 2),
+        "attack2": ("Ataque bumerangue de boné mágico-5.png", 4, 1),
+        "hit":     ("Mascote do boné azul_ reação ao impacto-6.png", 3, 1),
+        "ko":      ("Seis mascotes de boné azul isolados-11.png", 6, 2),
     },
 }
 
@@ -165,6 +165,13 @@ def split_sheet(path, count, rows, manual=None, erase=()):
     return frames
 
 
+def head_box(im):
+    """Caixa da cabeça [x0, x1, y0]: parte opaca dos 42% de cima do quadro (enquadra o retrato da seleção)."""
+    a = np.array(im.convert("RGBA"))[: round(im.height * 0.42), :, 3] >= 128
+    ys, xs = np.nonzero(a)
+    return [int(xs.min()), int(xs.max()), int(ys.min())]
+
+
 def main():
     meta = {}
     for char, anims in SHEETS.items():
@@ -185,6 +192,8 @@ def main():
                 im.save(os.path.join(OUT, char, name), optimize=True)
                 out.append({"src": f"assets/{char}/{name}", "w": im.width, "h": im.height,
                             "ax": round(fr["ax"] * scale), "ay": round(fr["ay"] * scale)})
+                if anim == "idle":
+                    out[-1]["head"] = head_box(im)
             meta[char][anim] = out
             print(char, anim, [int(f["bodyh"]) for f in frames])
     with open(os.path.join(OUT, "frames.js"), "w") as f:
@@ -199,6 +208,11 @@ def export_fx(fx, fname, frame, scale, meta):
     x0, y0, x1, y1 = fx["box"]
     im = Image.open(os.path.join(SRC, fname)).convert("RGBA").crop((x0, y0, x1, y1))
     im = im.resize((round(im.width * scale), round(im.height * scale)), Image.LANCZOS)
+    if "fade" in fx:   # esmaece a cauda (lado esquerdo), cortada do rastro que sai da mão
+        a = np.array(im)
+        ramp = np.clip(np.arange(im.width) / (im.width * fx["fade"]), 0, 1)
+        a[:, :, 3] = (a[:, :, 3] * ramp[None, :]).astype(np.uint8)
+        im = Image.fromarray(a)
     im.save(os.path.join(OUT, "fx", fx["name"] + ".png"), optimize=True)
     feet_x, feet_y = frame["x0"] + frame["ax"], frame["y0"] + frame["ay"]
     meta.setdefault("fx", {})[fx["name"]] = {
@@ -213,23 +227,21 @@ MANUAL = {
         [(0, 0, 537, 513)], [(537, 0, 1060, 513)], [(1060, 0, 1536, 513)],
         [(0, 513, 520, 1024)], [(520, 513, 1036, 1024)], [(1036, 513, 1536, 1024)],
     ]},
-    "chef": {"attack2": [
-        [(0, 0, 507, 513)], [(507, 0, 893, 513), (893, 0, 933, 400)], [(893, 0, 1536, 513)],
-        [(0, 513, 747, 1024), (747, 700, 775, 880)], [(747, 513, 1536, 1024)],
-    ]},
 }
 
 # objetos recortados da folha (e apagados do quadro) para virarem projéteis
 FX = [
     {"name": "rocket", "char": "soldado", "anim": "attack2", "frame": 3,
      "box": (440, 520, 615, 615), "angle": -14},
+    {"name": "capwave", "char": "bonezinho", "anim": "attack2", "frame": 2,
+     "box": (1295, 335, 1620, 575), "angle": 0, "fade": 0.2},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
 # já que cada imagem foi gerada numa escala diferente
 STAND_H = {
     "soldado": {"idle": 485, "walk": 485, "jump": 520, "attack1": 520, "attack2": 470, "hit": 620, "ko": 480},
-    "chef":    {"idle": 475, "walk": 492, "jump": 520, "attack1": 540, "attack2": 460, "hit": 660, "ko": 490},
+    "bonezinho": {"idle": 480, "walk": 465, "jump": 520, "attack1": 520, "attack2": 440, "hit": 640, "ko": 490},
 }
 
 if __name__ == "__main__":

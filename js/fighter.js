@@ -189,7 +189,7 @@ CK.Fighter = class Fighter {
         break;
       }
       case 'hit': this.set('hit', Math.min(2, Math.floor((t / this.stun) * 3))); break;
-      case 'ko': this.set('ko', Math.min(5, Math.floor(t / 9))); break;
+      case 'ko': this.set('ko', Math.min(this.frames.ko.length - 1, Math.floor(t / 9))); break;
       case 'win': {
         const seq = this.def.taunt;
         this.set('idle', seq[Math.floor(t / 16) % seq.length]);
