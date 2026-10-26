@@ -111,6 +111,37 @@ CK.CHARACTERS = {
       },
     },
   },
+  wanessinha: {
+    name: 'Wanessinha',
+    theme: 'Goleira',
+    desc: 'Camisa 1, luvas de paredão e cachos ao vento. Pega tudo — e devolve com um chutaço.',
+    color: '#d9a21b',
+    spark: '#ffd23f',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    attacks: {
+      attack1: {
+        name: 'Soco de Luva',
+        desc: 'Soco de goleira afastando o perigo. Rápido e sem cerimônia.',
+        preview: 2,
+        ticks: [5, 5, 7, 7],
+        active: [10, 17],
+        box: [30, -240, 190, 120],
+        dmg: 7, stun: 16, kb: 260,
+      },
+      attack2: {
+        name: 'Tiro de Meta',
+        desc: 'Ajeita a bola e solta uma bomba pela arena. Lento para preparar — pule por cima!',
+        preview: 3,
+        ticks: [12, 10, 10, 14, 12],
+        heavy: true,
+        projectile: {
+          at: 32, fx: 'ball', speed: 900, height: -150, size: [60, 60], spin: 14,
+          style: 'energy', dmg: 15, stun: 28, kb: 480,
+        },
+      },
+    },
+  },
 };
 
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);

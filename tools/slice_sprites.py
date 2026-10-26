@@ -45,6 +45,15 @@ SHEETS = {
         "hit":     ("Reações cômicas do mago com cubo mágico-6.png", 3, 1),
         "ko":      ("Mago derrotado com cubo mágico flutuante-7.png", 6, 2),
     },
+    "wanessinha": {
+        "idle":    ("Sprite sheet de goleira em espera-1.png", 6, 2),
+        "walk":    ("Loop de caminhada da goleira Wanessinha-2.png", 6, 2),
+        "jump":    ("Salto da goleira em quatro poses-3.png", 4, 2),
+        "attack1": ("Soco de goleira em quatro quadros-4.png", 4, 2),
+        "attack2": ("Sequência de chute da goleira-5.png", 5, 1),
+        "hit":     ("Goleira Wanessinha reage ao impacto-6.png", 3, 1),
+        "ko":      ("Queda cômica da goleira Wanessinha-7.png", 6, 2),
+    },
 }
 
 
@@ -246,6 +255,21 @@ MANUAL = {
             [(0, 600, 505, 1024)], [(505, 600, 1030, 1024)], [(1030, 600, 1536, 1024)],
         ],
     },
+    "wanessinha": {
+        "walk": [
+            [(0, 0, 455, 509)], [(455, 0, 933, 509)], [(933, 0, 1536, 509)],
+            [(0, 509, 465, 1024)], [(465, 509, 954, 1024)], [(954, 509, 1536, 1024)],
+        ],
+        "attack2": [
+            [(0, 0, 300, 793)], [(295, 0, 740, 793), (740, 500, 780, 793)],
+            [(740, 0, 1060, 793), (1060, 500, 1195, 793)], [(1060, 0, 1660, 500), (1195, 500, 1590, 793)],
+            [(1590, 0, 1983, 793)],
+        ],
+        "ko": [
+            [(0, 0, 520, 560)], [(520, 0, 980, 560)], [(980, 0, 1536, 560)],
+            [(0, 560, 460, 1024), (460, 850, 500, 1024)], [(460, 560, 1025, 1024)], [(1025, 560, 1536, 1024)],
+        ],
+    },
 }
 
 # objetos recortados da folha (e apagados do quadro) para virarem projéteis
@@ -256,6 +280,8 @@ FX = [
      "box": (1295, 335, 1620, 575), "angle": 0, "fade": 0.2},
     {"name": "cubewave", "char": "vr", "anim": "attack2", "frame": 2,
      "box": (1095, 140, 1245, 340), "angle": 0, "fade": 0.3},
+    {"name": "ball", "char": "wanessinha", "anim": "attack2", "frame": 3,
+     "box": (1535, 205, 1650, 315), "angle": 0},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -264,6 +290,7 @@ STAND_H = {
     "soldado": {"idle": 485, "walk": 485, "jump": 520, "attack1": 520, "attack2": 470, "hit": 620, "ko": 480},
     "bonezinho": {"idle": 480, "walk": 465, "jump": 520, "attack1": 520, "attack2": 440, "hit": 640, "ko": 490},
     "vr": {"idle": 491, "walk": 491, "jump": 520, "attack1": 524, "attack2": 618, "hit": 685, "ko": 495},
+    "wanessinha": {"idle": 505, "walk": 505, "jump": 600, "attack1": 593, "attack2": 562, "hit": 684, "ko": 505},
 }
 
 if __name__ == "__main__":
