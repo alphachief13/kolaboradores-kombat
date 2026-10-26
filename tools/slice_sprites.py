@@ -117,7 +117,7 @@ def dilate(m, r):
     out = m.copy()
     for dy in range(-r, r + 1):
         for dx in range(-r, r + 1):
-            out |= np.roll(np.roll(m, dy, 0), dx, 1)
+            out |= shift(m, dy, dx, False)
     return out
 
 
@@ -130,7 +130,7 @@ def erode(m):
     out = m.copy()
     for dy in (-1, 0, 1):
         for dx in (-1, 0, 1):
-            out &= np.roll(np.roll(m, dy, 0), dx, 1)
+            out &= shift(m, dy, dx, False)
     return out
 
 
@@ -161,25 +161,123 @@ def frame_from_mask(rgba, fm, body):
             "x0": x0, "y0": y0}
 
 
+def shift(m, dy, dx, fill=0):
+    """Desloca a matriz sem dar a volta nas bordas (np.roll daria)."""
+    out = np.full_like(m, fill)
+    h, w = m.shape
+    out[max(dy, 0):h + min(dy, 0), max(dx, 0):w + min(dx, 0)] = m[max(-dy, 0):h + min(-dy, 0), max(-dx, 0):w + min(-dx, 0)]
+    return out
+
+
+def grow(m, r):
+    out = m.copy()
+    for _ in range(r):
+        prev = out.copy()
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                out |= shift(prev, dy, dx, False)
+    return out
+
+
+def shrink(m, r):
+    return ~grow(~m, r)
+
+
+def resize_to(a, H, W):
+    """Amplia um mapa da grade reduzida para a folha inteira, suavizando (bilinear)."""
+    im = Image.fromarray((a * 255).astype(np.uint8)).resize((a.shape[1] * GROW_DOWN, a.shape[0] * GROW_DOWN),
+                                                            Image.BILINEAR)
+    full = np.zeros((H, W), np.float32)
+    k = np.array(im, np.float32) / 255
+    full[: k.shape[0], : k.shape[1]] = k[:H, :W]
+    return full
+
+
+GROW_DOWN = 2      # grade usada para separar quadros que se encostam
+SEED_MARGIN = 20   # px (na grade) que a semente de cada quadro fica longe da divisa com o vizinho
+SEAM = 7           # px (na grade) em que o alfa esmaece perto da divisa entre dois quadros
+
+
 def split_manual(rgba, rects_per_frame):
+    """Quadros que se encostam: os retângulos só dizem onde fica cada corpo. Cada quadro cresce
+    a partir do seu corpo pelos pixels opacos (como tinta escorrendo), então a divisa segue o
+    desenho em vez de uma linha reta, e o alfa esmaece suavemente nela."""
     H, W = rgba.shape[:2]
-    taken = np.zeros((H, W), bool)
-    frames = []
-    for rects in rects_per_frame:
-        fm = np.zeros((H, W), bool)
+    D = GROW_DOWN
+    h, w = H // D, W // D
+    alpha = rgba[:, :, 3]
+    opaque = alpha[: h * D, : w * D].reshape(h, D, w, D).max(axis=(1, 3)) > 8
+    own = np.zeros((h, w), np.int32)        # dono de cada ponto pelos retângulos (o primeiro tem prioridade)
+    for i, rects in enumerate(rects_per_frame):
         for x0, y0, x1, y1 in rects:
-            fm[y0:y1, x0:x1] = True
-        fm &= ~taken
-        taken |= fm
-        frames.append(fm)
-    return [frame_from_mask(rgba, fm, fm) for fm in frames]
+            reg = own[y0 // D: -(-y1 // D), x0 // D: -(-x1 // D)]
+            reg[reg == 0] = i + 1
+    lab = np.zeros((h, w), np.int32)
+    for i in range(len(rects_per_frame)):
+        mine = own == i + 1
+        # longe da divisa com os vizinhos (a borda da folha não conta)
+        lab[shrink(mine | (own == 0), SEED_MARGIN) & mine & opaque] = i + 1
+    while True:
+        free = opaque & (lab == 0)
+        nb = np.zeros_like(lab)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                nb = np.maximum(nb, shift(lab, dy, dx))
+        new = free & (nb > 0)
+        if not new.any():
+            break
+        lab[new] = nb[new]
+    lab[opaque & (lab == 0)] = own[opaque & (lab == 0)]   # pedaços soltos: pelo retângulo
+    frames = []
+    for i in range(len(rects_per_frame)):
+        mine = lab == i + 1
+        # esmaece o alfa perto de pixels que ficaram com outro quadro
+        other = (lab > 0) & ~mine
+        ramp = np.ones((h, w), np.float32)
+        near = other.copy()
+        for k in range(SEAM):
+            near = grow(near, 1)
+            ramp[near & (ramp == 1)] = (k + 1) / (SEAM + 1)
+        ramp[other] = 0
+        # o fundo em volta do quadro fica 1 (não come a borda do desenho na interpolação),
+        # e o que é de outro quadro some de vez
+        ramp[~mine & ~grow(mine, 2)] = 0
+        soft = resize_to(ramp, H, W) * upscale_to(~other, H, W, D)
+        fr = rgba.copy()
+        fr[:, :, 3] = (alpha * soft).astype(np.uint8)
+        fm = fr[:, :, 3] > 8
+        body = upscale_to(shrink(mine, 2) & opaque, H, W, D) & fm
+        frames.append(frame_from_mask(fr, fm, body if body.any() else fm))
+    return frames
+
+
+def upscale_to(m, H, W, d):
+    k = np.kron(m, np.ones((d, d), bool))[:H, :W]
+    return np.pad(k, ((0, H - k.shape[0]), (0, W - k.shape[1])), mode="edge")
+
+
+def soft_erase(rgba, box, r=16):
+    """Apaga o objeto que vira projétil: zera a caixa e esmaece r px em volta (sem corte reto)."""
+    x0, y0, x1, y1 = box
+    H, W = rgba.shape[:2]
+    ys, xs = np.mgrid[0:H, 0:W]
+    d = np.maximum(np.maximum(x0 - xs, xs - (x1 - 1)), np.maximum(y0 - ys, ys - (y1 - 1)))
+    keep = np.clip(d / r, 0, 1)
+    rgba[:, :, 3] = (rgba[:, :, 3] * keep).astype(np.uint8)
+
+
+BORDER = 6         # px apagados na borda de cada folha
+SPECK_AREA = 40    # componentes menores que isso (px na grade reduzida)...
+SPECK_DIST = 30    # ...e mais longe que isso de um corpo são sujeira da folha e somem
 
 
 def split_sheet(path, count, rows, manual=None, erase=()):
     img = Image.open(path).convert("RGBA")
     rgba = np.array(img)
-    for x0, y0, x1, y1 in erase:
-        rgba[y0:y1, x0:x1, 3] = 0
+    # algumas folhas têm uma linha de sujeira colada na borda da imagem
+    rgba[:BORDER, :, 3] = rgba[-BORDER:, :, 3] = rgba[:, :BORDER, 3] = rgba[:, -BORDER:, 3] = 0
+    for box in erase:
+        soft_erase(rgba, box)
     if manual:
         return split_manual(rgba, manual)
     alpha = rgba[:, :, 3]
@@ -194,7 +292,10 @@ def split_sheet(path, count, rows, manual=None, erase=()):
         pts = np.argwhere(m & ~erode(m))
         comps.append({"id": i, "area": int(m.sum()), "box": bbox(m), "pts": pts[:: max(1, len(pts) // 300)]})
     # agrupamento: junta sempre o menor grupo ao vizinho mais próximo até sobrar `count`
-    groups = [{"parts": [c], "area": c["area"], "pts": c["pts"]} for c in comps if c["area"] >= 2]
+    big = [c for c in comps if c["area"] >= SPECK_AREA]
+    comps = big + [c for c in comps if 2 <= c["area"] < SPECK_AREA
+                   and min(dist(c["pts"], b["pts"]) for b in big) <= SPECK_DIST ** 2]
+    groups = [{"parts": [c], "area": c["area"], "pts": c["pts"]} for c in comps]
     while len(groups) > count:
         groups.sort(key=lambda g: g["area"])
         g = groups.pop(0)
@@ -234,14 +335,18 @@ def main():
         for anim, (fname, count, rows) in anims.items():
             fx = [f for f in FX if f["char"] == char and f["anim"] == anim]
             frames = split_sheet(os.path.join(SRC, fname), count, rows, MANUAL.get(char, {}).get(anim),
-                                 [f["box"] for f in fx])
+                                 [b for f in fx for b in f.get("erase", [f["box"]])])
             scale = TARGET_H / STAND_H[char].get(anim, STAND_H[char]["idle"])
             for f in fx:
                 export_fx(f, fname, frames[f["frame"]], scale, meta)
             for i, n in FEATHER.get(char, {}).get(anim, {}).items():
                 a = frames[i]["img"][:, :, 3]
-                n = min(n, a.shape[1])
-                a[:, -n:] = (a[:, -n:] * np.linspace(1, 0, n)[None, :]).astype(np.uint8)
+                if n < 0:   # negativo: esmaece as primeiras colunas (lado esquerdo)
+                    n = min(-n, a.shape[1])
+                    a[:, :n] = (a[:, :n] * np.linspace(0, 1, n)[None, :]).astype(np.uint8)
+                else:
+                    n = min(n, a.shape[1])
+                    a[:, -n:] = (a[:, -n:] * np.linspace(1, 0, n)[None, :]).astype(np.uint8)
             out = []
             for i, fr in enumerate(frames):
                 im = Image.fromarray(fr["img"])
@@ -349,12 +454,15 @@ MANUAL = {
     },
 }
 
-# quadros cujo corte à direita atravessa um brilho: esmaece as últimas n colunas (px da folha)
+# quadros cujo corte à direita atravessa um brilho: esmaece as últimas n colunas (px da folha);
+# n negativo esmaece as primeiras (fumaça que sai pela borda esquerda da folha)
 FEATHER = {
+    "soldado": {"attack2": {3: -70}},
     "pastor": {"attack2": {2: 90, 3: 15}},
 }
 
-# objetos recortados da folha (e apagados do quadro) para virarem projéteis
+# objetos recortados da folha (e apagados do quadro) para virarem projéteis;
+# "erase" troca a caixa apagada do quadro quando o objeto não cabe num retângulo só
 FX = [
     {"name": "rocket", "char": "soldado", "anim": "attack2", "frame": 3,
      "box": (440, 520, 615, 615), "angle": -14},
@@ -369,7 +477,9 @@ FX = [
     {"name": "soundwave", "char": "petista", "anim": "attack2", "frame": 2,
      "box": (1100, 240, 1190, 400), "angle": 0, "fade": 0.25},
     {"name": "holywave", "char": "pastor", "anim": "attack2", "frame": 3,
-     "box": (1478, 150, 1660, 618), "angle": 0, "fade": 0.12},
+     "box": (1478, 150, 1660, 618), "angle": 0, "fade": 0.12,
+     # a frente da onda passa da caixa: apaga também acima e abaixo da mão (que fica)
+     "erase": [(1478, 150, 1660, 640), (1385, 150, 1478, 318), (1385, 425, 1478, 640)]},
     {"name": "glitch", "char": "mrrobot", "anim": "attack2", "frame": 3,
      "box": (1550, 205, 1708, 560), "angle": 0},
 ]
