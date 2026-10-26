@@ -54,6 +54,15 @@ SHEETS = {
         "hit":     ("Goleira Wanessinha reage ao impacto-6.png", 3, 1),
         "ko":      ("Queda cômica da goleira Wanessinha-7.png", 6, 2),
     },
+    "deborah": {
+        "idle":    ("Spritesheet de ovelha em guarda-1.png", 6, 2),
+        "walk":    ("Ovelha lutadora em caminhada lateral-2.png", 6, 2),
+        "jump":    ("Spritesheet de salto da ovelha-3.png", 4, 2),
+        "attack1": ("Spritesheet de quatro cabeçadas do cordeiro-4.png", 4, 2),
+        "attack2": ("Arremesso da bola de lã-5.png", 5, 1),
+        "hit":     ("Ovelha em reação de impacto-6.png", 3, 1),
+        "ko":      ("Sequência de nocaute da cordeira-7.png", 6, 2),
+    },
 }
 
 
@@ -270,6 +279,16 @@ MANUAL = {
             [(0, 560, 460, 1024), (460, 850, 500, 1024)], [(460, 560, 1025, 1024)], [(1025, 560, 1536, 1024)],
         ],
     },
+    "deborah": {
+        "attack2": [
+            [(0, 0, 345, 793)], [(345, 0, 680, 793)], [(680, 0, 1150, 793), (1150, 300, 1190, 430)],
+            [(1150, 0, 1690, 793)], [(1690, 0, 1983, 793)],
+        ],
+        "ko": [
+            [(0, 0, 500, 560)], [(500, 0, 1000, 560)], [(1000, 0, 1536, 560)],
+            [(0, 600, 430, 1024)], [(430, 600, 990, 1024)], [(990, 600, 1536, 1024)],
+        ],
+    },
 }
 
 # objetos recortados da folha (e apagados do quadro) para virarem projéteis
@@ -282,6 +301,8 @@ FX = [
      "box": (1095, 140, 1245, 340), "angle": 0, "fade": 0.3},
     {"name": "ball", "char": "wanessinha", "anim": "attack2", "frame": 3,
      "box": (1535, 205, 1650, 315), "angle": 0},
+    {"name": "woolball", "char": "deborah", "anim": "attack2", "frame": 2,
+     "box": (1030, 315, 1190, 415), "angle": 0, "fade": 0.35},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -291,6 +312,7 @@ STAND_H = {
     "bonezinho": {"idle": 480, "walk": 465, "jump": 520, "attack1": 520, "attack2": 440, "hit": 640, "ko": 490},
     "vr": {"idle": 491, "walk": 491, "jump": 520, "attack1": 524, "attack2": 618, "hit": 685, "ko": 495},
     "wanessinha": {"idle": 505, "walk": 505, "jump": 600, "attack1": 593, "attack2": 562, "hit": 684, "ko": 505},
+    "deborah": {"idle": 476, "walk": 476, "jump": 560, "attack1": 566, "attack2": 395, "hit": 660, "ko": 490},
 }
 
 if __name__ == "__main__":

@@ -142,6 +142,37 @@ CK.CHARACTERS = {
       },
     },
   },
+  deborah: {
+    name: 'Dééééééborah',
+    theme: 'Cordeira',
+    desc: 'Cachos ruivos, orelhas de ovelha e lã por todo lado. Fofa até a primeira cabeçada.',
+    color: '#a3203a',
+    spark: '#fff1c9',
+    idle: [0, 1, 0, 4],
+    taunt: [2, 3, 5, 3],
+    attacks: {
+      attack1: {
+        name: 'Cabeçada de Cordeira',
+        desc: 'Avança de cabeça baixa contra o rival. Rápida e teimosa.',
+        preview: 2,
+        ticks: [5, 5, 7, 7],
+        active: [10, 17],
+        box: [30, -250, 185, 130],
+        dmg: 7, stun: 16, kb: 260,
+      },
+      attack2: {
+        name: 'Bola de Lã',
+        desc: 'Enrola um novelo bem fofo e arremessa pela arena. Lento para preparar — pule por cima!',
+        preview: 2,
+        ticks: [12, 12, 14, 14, 12],
+        heavy: true,
+        projectile: {
+          at: 24, fx: 'woolball', speed: 760, height: -175, size: [90, 90],
+          style: 'energy', dmg: 15, stun: 28, kb: 480,
+        },
+      },
+    },
+  },
 };
 
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);
