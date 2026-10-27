@@ -137,6 +137,45 @@ CK.CHARACTERS = {
       },
     },
   },
+  // variação do V R: troca o cubo pela placa-mãe (outro visual e outros golpes, mesmo card na seleção)
+  manel: {
+    name: 'Manel',
+    variantOf: 'vr',
+    theme: 'Técnico de hardware',
+    desc: 'Camiseta preta, calça cargo e uma placa-mãe turbinada que serve de escudo — e de arma.',
+    color: '#19b8c9',
+    spark: '#6ff3ff',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    role: 'Defensor',
+    // pesado e de pernas firmes; a parede de luz apaga os projéteis do rival e o empurra para longe
+    stats: { hp: 100, walk: 315, back: 255, air: 310, jump: 1150, weight: 0.85 },
+    attacks: {
+      attack1: {
+        name: 'Placada',
+        desc: 'Avança um passo e acerta a placa-mãe em cheio. Faísca no impacto.',
+        preview: 2,
+        ticks: [6, 6, 8, 9],
+        active: [12, 20],
+        lunge: [6, 14, 300],
+        box: [30, -240, 200, 130],
+        stamina: 18,
+        dmg: 9, stun: 18, kb: 340,
+      },
+      attack2: {
+        name: 'Firewall',
+        desc: 'Uma parede de luz que avança devagar, apaga os projéteis do rival e o empurra para longe. Atravesse de dash!',
+        preview: 3,
+        ticks: [12, 12, 10, 16, 12],
+        heavy: true,
+        cost: 50,
+        projectile: {
+          at: 34, fx: 'firewall', kind: 'wave', speed: 520, range: 600, grow: 1.15,
+          height: -120, size: [60, 200], style: 'energy', cancels: true, dmg: 9, stun: 22, kb: 620,
+        },
+      },
+    },
+  },
   wanessinha: {
     name: 'Wanessinha',
     theme: 'Goleira',
@@ -286,6 +325,7 @@ CK.CHARACTERS = {
   },
   bandicoot: {
     name: 'Cordeiro Bandicoot',
+    variantOf: 'cristorey',
     theme: 'Acrobata',
     desc: 'Tênis vermelho, bermuda azul e o boné virado para trás. Pula, gira e não para quieto um segundo.',
     color: '#f26a1b',
@@ -432,7 +472,15 @@ CK.CHARACTERS = {
   },
 };
 
+// todos os lutadores, variações incluídas (a rede e as escolhas usam o índice nesta lista)
 CK.CHAR_IDS = Object.keys(CK.CHARACTERS);
+
+// variações: lutadores com "variantOf" dividem o card do personagem base na seleção,
+// mas têm visual, atributos e golpes próprios. FAMILIES: [base, ...variações], na ordem da grade
+CK.baseOf = (id) => CK.CHARACTERS[id].variantOf || id;
+CK.FAMILIES = CK.CHAR_IDS.filter((id) => !CK.CHARACTERS[id].variantOf)
+  .map((base) => [base, ...CK.CHAR_IDS.filter((id) => CK.CHARACTERS[id].variantOf === base)]);
+CK.familyOf = (id) => CK.FAMILIES.find((fam) => fam[0] === CK.baseOf(id));
 
 // atributos do lutador; quem não define "stats" usa os valores padrão abaixo
 CK.statsOf = (def) => ({

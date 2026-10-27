@@ -43,7 +43,7 @@ Modos (menu **Jogar**):
 - **2 Jogadores**: local, no mesmo teclado ou com controles.
 - **Em rede (LAN)**: ver abaixo.
 
-Fluxo: menu → seleção de personagem (cada jogador escolhe e confirma) → contagem 3, 2, 1, FIGHT! → luta → K.O. → revanche quando os dois aceitam.
+Fluxo: menu → seleção de personagem (cada jogador escolhe, troca a variação se houver, e confirma) → contagem 3, 2, 1, FIGHT! → luta → K.O. → revanche quando os dois aceitam.
 
 ## Jogar em rede
 
@@ -77,15 +77,21 @@ Depois de cada push, o jogo fica em `https://alphachief13.github.io/kolaboradore
 
 ## Personagens
 
+Alguns personagens têm **variações**: dividem o mesmo card na seleção, mas cada uma tem visual, atributos e golpes
+próprios. Os pontinhos embaixo do retrato mostram quantas são; troque com `W`/`S` ou `↑`/`↓` (ou clicando no nome
+da variação ao lado da grade). No torneio, os adversários aparecem em qualquer variação.
+
 - **Cabo Queijo** (militar): cassetete tático (rápido) e bazuca tubarão (míssil que cruza a arena; dá para pular por cima).
 - **Bonézinho** (mestre dos bonés): golpe de aba (rápido) e bumerangue mágico (boné de energia que vai e volta e acerta uma vez só; dá para pular por cima).
 - **V R** (mago do cubo): golpe do cubo (rápido) e chuva de cubinhos (as peças do cubo cruzam a arena; dá para pular por cima).
+  - variação **Manel** (técnico de hardware): placada (rápido, avança um passo) e firewall (parede de luz que avança devagar,
+    apaga os projéteis do rival e o empurra para longe; alta demais para pular, atravesse de dash ou defenda).
 - **Wanessinha** (goleira): soco de luva (rápido) e tiro de meta (bola chutada que cruza a arena; dá para pular por cima).
 - **Dééééééborah** (cordeira): cabeçada de cordeira (rápido) e bola de lã (novelo arremessado que cruza a arena; dá para pular por cima).
 - **Petista** (militante): livraço vermelho (rápido) e grito de megafone (onda sonora que cruza a arena; dá para pular por cima).
 - **Pastor** (pregador): golpe da palavra (rápido) e onda de luz (onda dourada que cruza a arena; dá para pular por cima).
-- **Cordeiro Bandicoot** (acrobata): boné giratório (rápido) e boné cometa (boné lançado em arco que estoura onde cai; fuja para o lado).
 - **Viva Cristo Rey** (fisiculturista): soco explosivo (rápido, mas lento para sair) e bomba cartunesca (arremessada em arco, quica uma vez e explode em área; pule alto ou fuja para longe).
+  - variação **Cordeiro Bandicoot** (acrobata): boné giratório (rápido) e boné cometa (boné lançado em arco que estoura onde cai; fuja para o lado).
 - **Bolsotron** (ciborgue patriota): pistola de energia (rápido, de longo alcance) e canhão verde-amarelo (raio de energia, o projétil mais rápido do jogo; pule cedo).
 - **Luladroid** (ciborgue boêmio): garrafada (rápido, lento para sair, mas pesado) e rajada de cachaça (jato de curto alcance que deixa o rival tonto, com os controles invertidos).
 
@@ -119,3 +125,4 @@ python3 tools/slice_sprites.py   # requer Pillow e numpy
 ```
 
 Para adicionar um personagem: coloque as 7 folhas (idle, walk, jump, attack1, attack2, hit, ko), registre-as em `SHEETS` e `STAND_H` no script, rode o script e adicione a definição em `CK.CHARACTERS` (`js/config.js`).
+Para que ele seja uma variação de outro personagem, coloque `variantOf: '<id do personagem base>'` na definição.

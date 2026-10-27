@@ -282,6 +282,11 @@ CK.Sfx = (() => {
       arp([880, 660, 440, 220], { type: 'square', dur: 0.08, vol: 0.09, step: 0.07, crush: 4, wet: 0.05 });
       noise({ type: 'bandpass', f: 3000, dur: 0.3, vol: 0.15, crush: 3, at: 0.05 });
     },
+    // projétil apagado por uma parede (Firewall): estalo elétrico curto
+    cancel: () => {
+      osc({ type: 'square', f: 1600, f2: 200, dur: 0.12, vol: 0.08, crush: 3, wet: 0.1 });
+      noise({ type: 'highpass', f: 3500, dur: 0.12, vol: 0.3 });
+    },
     // enrolado na lã: farfalhar macio
     wrapped: () => {
       noise({ type: 'lowpass', f: 1400, dur: 0.6, vol: 0.3, trem: [14, 0.6], attack: 0.05 });
@@ -399,6 +404,42 @@ CK.Sfx = (() => {
         for (let i = 0; i < 8; i++) click({ f: rnd(2000, 4000), at: 0.4 + rnd(0, 0.5), vol: 0.2 });   // peças caindo
       },
       jump: () => { whoosh({ dur: 0.15, vol: 0.15 }); arp([1046, 1568], { dur: 0.15, vol: 0.05, step: 0.05, wet: 0.4 }); },
+    },
+    // técnico de hardware: placa-mãe faiscando, cooler girando e o "bip" do computador ligando
+    manel: {
+      a1: () => {
+        whoosh({ f: 400, f2: 2200, dur: 0.2, vol: 0.28 });
+        osc({ type: 'sawtooth', f: 120, f2: 240, dur: 0.2, vol: 0.05, lp: 1500, trem: [40, 0.6] });   // cooler
+      },
+      a1Hit: () => {
+        kick({ f: 150, f2: 50, dur: 0.18, vol: 0.7 });
+        noise({ type: 'highpass', f: 3000, dur: 0.12, vol: 0.45, crush: 3 });                        // faísca
+        osc({ type: 'square', f: 2400, f2: 600, dur: 0.08, vol: 0.05 });
+      },
+      // carregando a placa: zumbido elétrico que sobe + bip de BIOS
+      a2: () => {
+        osc({ type: 'sawtooth', f: 60, f2: 240, dur: 0.6, vol: 0.08, lp: 1800, trem: [50, 0.5] });
+        osc({ type: 'square', f: 1000, dur: 0.12, vol: 0.06, at: 0.45, wet: 0.1 });
+      },
+      // a parede de luz: zumbido grave contínuo e estalos
+      shot: () => {
+        osc({ type: 'sawtooth', f: 110, dur: 0.9, vol: 0.09, lp: 900, trem: [30, 0.5], attack: 0.05, wet: 0.3 });
+        noise({ type: 'bandpass', f: 2500, q: 1, dur: 0.9, vol: 0.18, trem: [17, 0.7], wet: 0.3 });
+        for (let i = 0; i < 5; i++) noise({ type: 'highpass', f: 4000, dur: 0.03, vol: 0.2, at: rnd(0.1, 0.8) });
+      },
+      shotHit: () => {
+        kick({ f: 110, f2: 35, dur: 0.4, vol: 0.9 });
+        osc({ type: 'square', f: 900, f2: 100, dur: 0.35, vol: 0.1, crush: 4, wet: 0.2 });
+        noise({ type: 'lowpass', f: 4000, f2: 300, dur: 0.4, vol: 0.45, wet: 0.3 });
+      },
+      hurt: () => voice({ f: 230, f2: 170, dur: 0.18, vowel: 'e', vol: 0.16 }),
+      // a voz cai e o computador desliga: bip descendo e cooler parando
+      koVoice: () => {
+        voice({ f: 240, f2: 100, dur: 0.9, vowel: 'o', vol: 0.16 });
+        arp([880, 660, 440], { type: 'square', dur: 0.15, vol: 0.06, step: 0.15, at: 0.5, crush: 4 });
+        osc({ type: 'sawtooth', f: 200, f2: 20, dur: 1.4, vol: 0.05, lp: 1000, trem: [40, 0.5], at: 0.4 });
+      },
+      jump: () => { whoosh({ f: 400, f2: 2200, dur: 0.15, vol: 0.16 }); noise({ type: 'highpass', f: 4500, dur: 0.06, vol: 0.12 }); },
     },
     // goleira: luvas acolchoadas, apito e chute na bola
     wanessinha: {

@@ -236,6 +236,16 @@ kbd {
 .tag.p2 { right: calc(var(--u) * 6); background: var(--p2); }
 .card.sel-p1 .tag.p1, .card.sel-p2 .tag.p2 { visibility: visible; }
 .card.ok-p1 .tag.p1::after, .card.ok-p2 .tag.p2::after { content: ' ✓'; }
+/* personagem com variações: um ponto por variação, aceso na que aparece no retrato */
+.card .vars {
+  position: absolute; bottom: calc(var(--u) * 8); left: 0; right: 0; z-index: 1;
+  display: flex; justify-content: center; gap: calc(var(--u) * 6);
+}
+.card .vars i {
+  width: calc(var(--u) * 10); height: calc(var(--u) * 10); border-radius: 50%;
+  background: rgba(0, 0, 0, .55); border: calc(var(--u) * 2) solid #fff;
+}
+.card .vars i.on { background: #ffe600; }
 
 /* lutadores escolhidos, de corpo inteiro, nas laterais */
 .mk-side { width: calc(var(--u) * 260); display: flex; flex-direction: column; align-items: center; }
@@ -267,6 +277,19 @@ kbd {
 .mk-side.p1 .mk-plate { box-shadow: 0 calc(var(--u) * -4) 0 var(--p1) inset; }
 .mk-side.p2 .mk-plate { box-shadow: 0 calc(var(--u) * -4) 0 var(--p2) inset; }
 .mk-plate .theme { margin-bottom: calc(var(--u) * 6); }
+/* troca de variação (também com ↑/↓); a área do lutador cede a altura da linha de botões */
+.mk-side.vars .mk-fig { height: calc(var(--u) * 252); }
+.mk-plate .variants { display: flex; justify-content: center; gap: calc(var(--u) * 6); margin-bottom: calc(var(--u) * 6); }
+.mk-plate .variants button {
+  font: calc(var(--u) * 12) var(--display); letter-spacing: .03em; white-space: nowrap;
+  padding: calc(var(--u) * 2) calc(var(--u) * 7);
+  color: #cfc9c0; background: rgba(255, 255, 255, .08);
+  border: calc(var(--u) * 2) solid rgba(255, 255, 255, .25);
+  min-width: 0; clip-path: none;
+}
+.mk-plate .variants button.on { color: #000; background: var(--accent); border-color: #fff; }
+.mk-plate .variants button:disabled { cursor: default; }
+.mk-plate .variants button:disabled:not(.on) { opacity: .5; }
 .theme { font-size: calc(var(--u) * 13); text-transform: uppercase; letter-spacing: .15em; color: #cfc9c0; }
 .mk-plate .move { font-size: calc(var(--u) * 15); color: #eee; line-height: 1.5; }
 .mk-plate .move b { color: var(--accent); margin-right: .3em; }

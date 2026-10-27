@@ -45,6 +45,15 @@ SHEETS = {
         "hit":     ("Reações cômicas do mago com cubo mágico-6.png", 3, 1),
         "ko":      ("Mago derrotado com cubo mágico flutuante-7.png", 6, 2),
     },
+    "manel": {
+        "idle":    ("Lutador urbano com escudo eletrônico-2.png", 6, 2),
+        "walk":    ("Lutador da Placa-Mãe em Caminhada-1.png", 6, 2),
+        "jump":    ("Salto acrobático com escudo de placa-mãe-4.png", 4, 2),
+        "attack1": ("Ataque lateral com placa-mãe-3.png", 4, 2),
+        "attack2": ("Sequência de ataque com placa-mãe elétrica-8.png", 5, 1),
+        "hit":     ("Reação de impacto do lutador tecnológico-5.png", 3, 1),
+        "ko":      ("Nocaute do lutador com placa-mãe-6.png", 6, 2),
+    },
     "wanessinha": {
         "idle":    ("Sprite sheet de goleira em espera-1.png", 6, 2),
         "walk":    ("Loop de caminhada da goleira Wanessinha-2.png", 6, 2),
@@ -431,6 +440,10 @@ MANUAL = {
             [(0, 600, 505, 1024)], [(505, 600, 1030, 1024)], [(1030, 600, 1536, 1024)],
         ],
     },
+    "manel": {"ko": [
+        [(0, 0, 480, 560)], [(480, 0, 1010, 560)], [(1010, 0, 1536, 560)],
+        [(0, 600, 500, 1024)], [(500, 600, 1022, 1024)], [(1022, 600, 1536, 1024)],
+    ]},
     "wanessinha": {
         "walk": [
             [(0, 0, 455, 509)], [(455, 0, 933, 509)], [(933, 0, 1536, 509)],
@@ -528,6 +541,9 @@ FX = [
      "box": (1295, 335, 1620, 575), "angle": 0, "fade": 0.2},
     {"name": "cubewave", "char": "vr", "anim": "attack2", "frame": 2,
      "box": (1095, 140, 1245, 340), "angle": 0, "fade": 0.3},
+    # a parede de luz na frente da placa-mãe (a placa fica na mão)
+    {"name": "firewall", "char": "manel", "anim": "attack2", "frame": 3,
+     "box": (1522, 262, 1655, 508), "angle": 0, "fade": 0.12},
     {"name": "ball", "char": "wanessinha", "anim": "attack2", "frame": 3,
      "box": (1535, 205, 1650, 315), "angle": 0},
     {"name": "woolball", "char": "deborah", "anim": "attack2", "frame": 2,
@@ -560,6 +576,7 @@ STAND_H = {
     "soldado": {"idle": 485, "walk": 485, "jump": 520, "attack1": 520, "attack2": 470, "hit": 620, "ko": 480},
     "bonezinho": {"idle": 480, "walk": 465, "jump": 520, "attack1": 520, "attack2": 440, "hit": 640, "ko": 490},
     "vr": {"idle": 491, "walk": 491, "jump": 520, "attack1": 524, "attack2": 618, "hit": 685, "ko": 495},
+    "manel": {"idle": 490, "walk": 490, "jump": 645, "attack1": 554, "attack2": 554, "hit": 850, "ko": 554},
     "wanessinha": {"idle": 505, "walk": 505, "jump": 600, "attack1": 593, "attack2": 562, "hit": 684, "ko": 505},
     "deborah": {"idle": 476, "walk": 476, "jump": 560, "attack1": 566, "attack2": 395, "hit": 660, "ko": 490},
     "petista": {"idle": 492, "walk": 492, "jump": 490, "attack1": 490, "attack2": 435, "hit": 565, "ko": 492},

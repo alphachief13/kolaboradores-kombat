@@ -34,10 +34,10 @@
   let mode = 'pvp';         // 'cpu': jogador 2 é o computador · 'cup': torneio contra a CPU · 'net': partida em rede (ver online.js)
   const SELECT_HINT = {
     pvp: $('#select-hint').innerHTML,
-    net: 'Escolha com <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd>, confirme com <kbd>F</kbd>/<kbd>K</kbd>, desfaça com <kbd>G</kbd>/<kbd>L</kbd> · ou clique no retrato',
+    net: 'Escolha com <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd>, <kbd>W</kbd>/<kbd>S</kbd> ou <kbd>↑</kbd>/<kbd>↓</kbd> variação, confirme com <kbd>F</kbd>/<kbd>K</kbd>, desfaça com <kbd>G</kbd>/<kbd>L</kbd> · ou clique no retrato',
     watch: 'Assistindo: os jogadores estão escolhendo seus lutadores.',
-    cup: 'Escolha seu lutador para o torneio: <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>F</kbd>/<kbd>K</kbd> confirma · <kbd>Esc</kbd> volta · ou clique no retrato',
-    cpu: 'Escolha seu lutador e depois o da CPU: <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>F</kbd>/<kbd>K</kbd> confirma, <kbd>G</kbd>/<kbd>L</kbd> desfaz · <kbd>Esc</kbd> volta · ou clique no retrato',
+    cup: 'Escolha seu lutador para o torneio: <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>W</kbd>/<kbd>S</kbd> ou <kbd>↑</kbd>/<kbd>↓</kbd> variação, <kbd>F</kbd>/<kbd>K</kbd> confirma · <kbd>Esc</kbd> volta · ou clique no retrato',
+    cpu: 'Seu lutador e depois o da CPU: <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>W</kbd>/<kbd>S</kbd> ou <kbd>↑</kbd>/<kbd>↓</kbd> variação, <kbd>F</kbd>/<kbd>K</kbd> confirma, <kbd>G</kbd>/<kbd>L</kbd> desfaz · <kbd>Esc</kbd> volta · ou clique no retrato',
   };
   const RESULT_HINT = {
     pvp: $('#result-hint').innerHTML,
@@ -158,6 +158,9 @@
   // ---------- seleção de personagem ----------
   const sel = { idx: [0, 1], ok: [false, false] };
   const frameSrc = (id, anim, n) => window.FRAMES[id][anim][n].src;
+  // a grade tem um card por personagem; sel.idx aponta o lutador (variação) em CK.CHAR_IDS
+  const famOf = (i) => CK.familyOf(CK.CHAR_IDS[i]);
+  const famIdx = (i) => CK.FAMILIES.indexOf(famOf(i));
 
   // enquadra o retrato: escala a caixa da cabeça (pré-calculada em tools/slice_sprites.py)
   // para caber no card e centraliza nela
@@ -176,22 +179,25 @@
     const box = $('#cards');
     box.innerHTML = '';
     // duas linhas: três colunas até 6 personagens, quatro até 8 e cinco acima disso (cards mais estreitos)
-    const n = CK.CHAR_IDS.length;
+    const n = CK.FAMILIES.length;
     const cols = n > 8 ? 5 : n > 6 ? 4 : 3;
     box.classList.toggle('cols4', cols === 4);
     box.classList.toggle('cols5', cols === 5);
-    const tiles = CK.CHAR_IDS.map((id, i) => {
-      const c = CK.CHARACTERS[id];
+    tileW = { 3: 150, 4: 140, 5: 112 }[cols];
+    const tiles = CK.FAMILIES.map((fam, i) => {
+      const c = CK.CHARACTERS[fam[0]];
       const card = document.createElement('div');
       card.className = 'card';
       card.style.setProperty('--accent', c.color);
-      card.innerHTML = `<img src="${frameSrc(id, 'idle', 0)}" alt="${c.name}">
-        <span class="tag p1">1P</span><span class="tag p2">2P</span>`;
-      framePortrait(card.querySelector('img'), window.FRAMES[id].idle[0], { 3: 150, 4: 140, 5: 112 }[cols]);
+      card.innerHTML = `<img alt="${c.name}">
+        <span class="tag p1">1P</span><span class="tag p2">2P</span>
+        ${fam.length > 1 ? `<span class="vars">${fam.map(() => '<i></i>').join('')}</span>` : ''}`;
+      setPortrait(card, fam[0]);
       card.onclick = () => {
         const p = mode === 'net' ? CK.Online.mySlot : !sel.ok[0] ? 0 : !sel.ok[1] && mode !== 'cup' ? 1 : -1;
         if (p < 0 || sel.ok[p]) return;
-        sel.idx[p] = i;
+        // no card em que já está, confirma a variação escolhida; senão, a do personagem base
+        if (famIdx(sel.idx[p]) !== i) sel.idx[p] = CK.CHAR_IDS.indexOf(fam[0]);
         confirmPick(p);
       };
       return card;
@@ -212,6 +218,34 @@
       tiles.splice(tiles.length - rest + Math.ceil(rest / 2), 0, ...Array.from({ length: pad }, emblem));
     }
     tiles.forEach((t) => box.appendChild(t));
+  }
+
+  // retrato do card: mostra a variação em que o jogador está (a do 1P, se os dois estiverem nele)
+  let tileW = 150;
+  function setPortrait(card, id) {
+    const img = card.querySelector('img');
+    if (img.dataset.id === id) return;
+    img.dataset.id = id;
+    img.src = frameSrc(id, 'idle', 0);
+    img.alt = CK.CHARACTERS[id].name;
+    card.style.setProperty('--accent', CK.CHARACTERS[id].color);
+    framePortrait(img, window.FRAMES[id].idle[0], tileW);
+  }
+
+  // quem pode trocar a variação do lado p agora (teclas ou clique na plaquinha)
+  function canChange(p) {
+    if (sel.ok[p]) return false;
+    if (mode === 'net') return p === CK.Online.mySlot;
+    if (mode === 'pvp') return true;
+    return p === (sel.ok[0] && mode === 'cpu' ? 1 : 0);
+  }
+
+  function setVariant(p, id) {
+    const i = CK.CHAR_IDS.indexOf(id);
+    if (i === sel.idx[p]) return;
+    sel.idx[p] = i;
+    CK.Sfx.play('move');
+    picked(p);
   }
 
   // lutador de corpo inteiro ao lado da grade, ancorado pelos pés
@@ -277,21 +311,32 @@
   }
 
   function renderSelect() {
+    const fi = [famIdx(sel.idx[0]), mode !== 'cup' ? famIdx(sel.idx[1]) : -1];
     document.querySelectorAll('#cards .card').forEach((card, i) => {
-      card.classList.toggle('sel-p1', sel.idx[0] === i);
-      card.classList.toggle('sel-p2', mode !== 'cup' && sel.idx[1] === i);
-      card.classList.toggle('ok-p1', sel.ok[0] && sel.idx[0] === i);
-      card.classList.toggle('ok-p2', sel.ok[1] && sel.idx[1] === i);
+      card.classList.toggle('sel-p1', fi[0] === i);
+      card.classList.toggle('sel-p2', fi[1] === i);
+      card.classList.toggle('ok-p1', sel.ok[0] && fi[0] === i);
+      card.classList.toggle('ok-p2', sel.ok[1] && fi[1] === i);
+      const fam = CK.FAMILIES[i];
+      const at = fi[0] === i ? 0 : fi[1] === i ? 1 : -1;
+      const id = at >= 0 ? CK.CHAR_IDS[sel.idx[at]] : fam[0];
+      setPortrait(card, id);
+      card.querySelectorAll('.vars i').forEach((dot, k) => dot.classList.toggle('on', fam[k] === id));
     });
     [0, 1].forEach((p) => {
-      const c = CK.CHARACTERS[CK.CHAR_IDS[sel.idx[p]]];
+      const id = CK.CHAR_IDS[sel.idx[p]];
+      const c = CK.CHARACTERS[id];
       const a1 = c.attacks.attack1, a2 = c.attacks.attack2;
+      const fam = famOf(sel.idx[p]);
       const side = $(`#side-p${p + 1}`);
       side.classList.toggle('ok', sel.ok[p]);
+      side.classList.toggle('vars', fam.length > 1);
       side.style.setProperty('--accent', c.color);
       side.querySelector('.mk-plate').innerHTML = `
         <h3>${c.name}</h3>
         <div class="theme">${c.theme}${c.role ? ` · ${c.role}` : ''}</div>
+        ${fam.length > 1 ? `<div class="variants">${fam.map((v) => `<button type="button" data-p="${p}" data-id="${v}"
+          class="${v === id ? 'on' : ''}" ${canChange(p) ? '' : 'disabled'}>${CK.CHARACTERS[v].name}</button>`).join('')}</div>` : ''}
         ${statBars(c)}
         <div class="move"><b>Rápido</b> ${a1.name}</div>
         <div class="move"><b>Forte</b> ${a2.name}</div>`;
@@ -319,12 +364,27 @@
     }).join('')}</div>`;
   }
 
+  // botões de variação na plaquinha ao lado da grade
+  document.querySelectorAll('.mk-plate').forEach((plate) => {
+    plate.addEventListener('click', (e) => {
+      const b = e.target.closest('.variants button');
+      if (b && canChange(+b.dataset.p)) setVariant(+b.dataset.p, b.dataset.id);
+    });
+  });
+
+  // ←/→ passa de personagem (sempre na versão base); ↑/↓ troca a variação dele
   function stepPick(p, inp) {
-    const n = CK.CHAR_IDS.length;
+    const n = CK.FAMILIES.length;
     if (inp.leftP || inp.rightP) {
-      sel.idx[p] = (sel.idx[p] + (inp.rightP ? 1 : n - 1)) % n;
+      const f = (famIdx(sel.idx[p]) + (inp.rightP ? 1 : n - 1)) % n;
+      sel.idx[p] = CK.CHAR_IDS.indexOf(CK.FAMILIES[f][0]);
       CK.Sfx.play('move');
       picked(p);
+    }
+    if (inp.upP || inp.blockP) {
+      const fam = famOf(sel.idx[p]);
+      const k = fam.indexOf(CK.CHAR_IDS[sel.idx[p]]);
+      if (fam.length > 1) setVariant(p, fam[(k + (inp.upP ? 1 : fam.length - 1)) % fam.length]);
     }
     if (inp.a1P) confirmPick(p);
   }
@@ -371,7 +431,8 @@
   }, 150);
 
   // ---------- torneio contra a CPU ----------
-  // mata-mata de 8: o jogador e sete adversários sorteados (sem repetir o lutador dele);
+  // mata-mata de 8: o jogador e sete adversários sorteados (um de cada personagem, em qualquer
+  // variação, sem repetir o do jogador);
   // as lutas entre CPUs são decididas na sorte, e a CPU fica mais forte a cada rodada
   const CUP_ROUNDS = ['Quartas', 'Semifinal', 'Final'];
   const CUP_PELA = ['pelas Quartas', 'pela Semifinal', 'pela Final'];
@@ -388,7 +449,8 @@
 
   function startCup(me) {
     const size = 1 << CUP_ROUNDS.length;
-    const rivals = shuffle(CK.CHAR_IDS.filter((id) => id !== me));
+    const anyOf = (fam) => fam[Math.floor(Math.random() * fam.length)];
+    const rivals = shuffle(CK.FAMILIES.filter((fam) => fam !== CK.familyOf(me)).map(anyOf));
     // com poucos personagens, completa a chave repetindo lutadores
     while (rivals.length < size - 1) rivals.push(CK.CHAR_IDS[Math.floor(Math.random() * CK.CHAR_IDS.length)]);
     // o jogador entra na posição 0; os outros são identificados pela posição na chave

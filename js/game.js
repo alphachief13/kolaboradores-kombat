@@ -161,6 +161,7 @@ CK.Game = class Game {
       const sweep = { x: x0, y: y0, w: Math.max(pr.px, pr.x) + w / 2 - x0, h: Math.max(pr.py, pr.y) + h / 2 - y0 };
       pr.px = pr.x;
       pr.py = pr.y;
+      if (pr.p.cancels) this.cancelShots(pr, sweep);
       if (pr.immune > 0) pr.immune--;
       else if (pr.p.hitSpeed && Math.abs(pr.v) < pr.p.hitSpeed) continue;   // freando quase parado não machuca
       else if (hurt && CK.overlap(sweep, hurt)) {
@@ -177,6 +178,18 @@ CK.Game = class Game {
       }
     }
     this.projectiles = this.projectiles.filter((p) => !p.dead);
+  }
+
+  // parede (p.cancels): apaga os projéteis do rival que encostam nela, sem estourar a bomba
+  cancelShots(pr, sweep) {
+    for (const o of this.projectiles) {
+      if (o.owner === pr.owner || o.dead) continue;
+      const [w, h] = (o.p.size || [70, 28]).map((n) => n * o.k);
+      if (!CK.overlap(sweep, { x: o.x - w / 2, y: o.y - h / 2, w, h })) continue;
+      o.dead = true;
+      this.emit('fx', 'energyBurst', o.x, o.y, pr.owner.def.spark);
+      this.emit('sfx', 'cancel', pr.owner.charId);
+    }
   }
 
   // trajetória de cada tipo de projétil (p.kind); sem kind = reto, com aceleração opcional
