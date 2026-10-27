@@ -18,8 +18,9 @@ Jogue em `https://alphachief13.github.io/kolaboradores-kombat/` ou abra o `index
 **Defesa**: segurando a defesa de frente para o golpe você leva só 20% do dano e não sofre efeitos (confuso, enrolado).
 O escudo nunca quebra.
 
-**Energia**: o ataque forte (projétil) gasta energia, a barra azul embaixo da vida. Ela recupera sozinha;
-quando acende, dá para disparar de novo.
+**Energia**: os ataques gastam energia, a barra azul embaixo da vida — o rápido gasta pouco, o forte (projétil)
+gasta muito. Ela recupera sozinha quando você não está atacando; sem energia, não dá para ficar só batendo.
+Quando a barra acende, dá para disparar o ataque forte de novo.
 
 **Sem paredes**: quem passa da borda da arena reaparece do outro lado.
 
@@ -63,7 +64,7 @@ Depois de cada push, o jogo fica em `https://alphachief13.github.io/kolaboradore
 ## Personagens
 
 - **Cabo Queijo** (militar): cassetete tático (rápido) e bazuca tubarão (míssil que cruza a arena; dá para pular por cima).
-- **Bonézinho** (mestre dos bonés): golpe de aba (rápido) e bumerangue mágico (boné de energia que cruza a arena; dá para pular por cima).
+- **Bonézinho** (mestre dos bonés): golpe de aba (rápido) e bumerangue mágico (boné de energia que vai e volta e acerta uma vez só; dá para pular por cima).
 - **V R** (mago do cubo): golpe do cubo (rápido) e chuva de cubinhos (as peças do cubo cruzam a arena; dá para pular por cima).
 - **Wanessinha** (goleira): soco de luva (rápido) e tiro de meta (bola chutada que cruza a arena; dá para pular por cima).
 - **Dééééééborah** (cordeira): cabeçada de cordeira (rápido) e bola de lã (novelo arremessado que cruza a arena; dá para pular por cima).

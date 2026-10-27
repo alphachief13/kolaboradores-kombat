@@ -168,9 +168,9 @@ CK.Game = class Game {
         else this.emit('fx', 'explosion', pr.x, pr.y);
         this.hit(pr.owner, target, pr.p, pr.x, pr.y, dir);
         if (pr.p.kind === 'boomerang' && pr.v > 0) {
-          // na ida: volta na hora e pode acertar de novo no caminho de volta
+          // na ida: volta na hora para a mão, sem acertar de novo
           pr.v = -Math.min(pr.v, 450);
-          pr.immune = 25;
+          pr.immune = Infinity;
         } else {
           pr.dead = true;
         }

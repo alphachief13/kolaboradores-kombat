@@ -30,7 +30,7 @@ CK.Fighter = class Fighter {
     this.atk = null;
     this.hasHit = false;
     this.stun = 0;
-    this.energy = CK.ENERGY;      // gasta no ataque forte e recupera sozinha
+    this.energy = CK.ENERGY;      // gasta nos ataques e recupera sozinha
   }
 
   get onGround() { return this.y >= CK.GROUND - 0.5; }
@@ -39,6 +39,11 @@ CK.Fighter = class Fighter {
   setState(s) {
     this.state = s;
     this.t = 0;
+  }
+
+  // o golpe rápido também gasta energia (stamina): sem ela, não dá para ficar só batendo
+  canStrike() {
+    return this.energy >= (this.def.attacks.attack1.cost || 0);
   }
 
   // só um disparo do especial por vez na arena, e só com energia suficiente
@@ -69,13 +74,13 @@ CK.Fighter = class Fighter {
     this.clock++;
     if (this.flash > 0) this.flash--;
     for (const k in this.status) if (this.status[k] > 0) this.status[k]--;
-    if (canAct && this.state !== 'attack2') this.energy = Math.min(CK.ENERGY, this.energy + CK.ENERGY_REGEN);
+    if (canAct && this.state !== 'attack1' && this.state !== 'attack2') this.energy = Math.min(CK.ENERGY, this.energy + CK.ENERGY_REGEN);
     if (this.trailHp > this.hp) this.trailHp = Math.max(this.hp, this.trailHp - 0.35);
 
     switch (this.state) {
       case 'idle':
       case 'walk':
-        if (canAct && inp.a1P) this.startAttack('attack1');
+        if (canAct && inp.a1P && this.canStrike()) this.startAttack('attack1');
         else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
         else if (canAct && inp.block) { this.setState('block'); this.stun = 0; this.vx = 0; }
         else if (canAct && (inp.up || inp.upP)) { this.setState('prejump'); this.vx = 0; }
@@ -96,7 +101,7 @@ CK.Fighter = class Fighter {
         }
         break;
       case 'air':
-        if (canAct && inp.a1P) this.startAttack('attack1');
+        if (canAct && inp.a1P && this.canStrike()) this.startAttack('attack1');
         else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
         break;
       case 'land':
@@ -111,7 +116,7 @@ CK.Fighter = class Fighter {
         // segurando a defesa; depois de defender um golpe fica preso por "stun" ticks (bloqueio)
         this.vx *= 0.85;
         if (this.t < this.stun) break;
-        if (canAct && inp.a1P) this.startAttack('attack1');
+        if (canAct && inp.a1P && this.canStrike()) this.startAttack('attack1');
         else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
         else if (!canAct || !inp.block) this.setState('idle');
         break;

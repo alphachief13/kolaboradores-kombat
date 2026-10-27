@@ -13,7 +13,7 @@ window.CK = {
   AIR: 330,
   PUSH_DIST: 115,     // distância mínima entre os dois lutadores
   MAX_HP: 100,
-  ENERGY: 100,        // energia do ataque forte (cada disparo gasta "cost")
+  ENERGY: 100,        // energia (stamina) dos ataques: cada golpe gasta o seu "cost"
   ENERGY_REGEN: 0.25, // energia recuperada por tick (15 por segundo)
   CHIP: 0.2,          // fração do dano que passa pela defesa
   HURT_W: 100,
@@ -41,6 +41,7 @@ CK.CHARACTERS = {
         ticks: [6, 5, 7, 9],
         active: [11, 18],
         box: [30, -240, 185, 130],
+        cost: 10,
         dmg: 9, stun: 17, kb: 280,
       },
       attack2: {
@@ -71,22 +72,23 @@ CK.CHARACTERS = {
     attacks: {
       attack1: {
         name: 'Golpe de Aba',
-        desc: 'Uma cabeçada de lado com a aba do boné. Rápida e certeira.',
+        desc: 'Uma cabeçada de lado com a aba do boné. Certeira, mas cansa.',
         preview: 2,
-        ticks: [5, 5, 7, 7],
-        active: [9, 17],
+        ticks: [6, 6, 8, 10],
+        active: [11, 19],
         box: [30, -245, 190, 125],
+        cost: 14,
         dmg: 7, stun: 16, kb: 260,
       },
       attack2: {
         name: 'Bumerangue Mágico',
-        desc: 'Arremessa o boné, que vai, freia e volta para a mão — acerta na ida e na volta.',
+        desc: 'Arremessa o boné, que vai, freia e volta para a mão — acerta na ida ou na volta.',
         preview: 1,
-        ticks: [10, 12, 14, 10],
+        ticks: [12, 14, 14, 14],
         heavy: true,
-        cost: 40,
+        cost: 55,
         projectile: {
-          at: 22, fx: 'capwave', kind: 'boomerang', speed: 950, decel: 700, height: -95,
+          at: 26, fx: 'capwave', kind: 'boomerang', speed: 950, decel: 700, height: -95,
           size: [90, 60], scale: 0.6, spin: 10, hitSpeed: 300, style: 'energy', dmg: 11, stun: 24, kb: 380,
         },
       },
@@ -111,6 +113,7 @@ CK.CHARACTERS = {
         ticks: [5, 5, 7, 8],
         active: [10, 18],
         box: [40, -235, 220, 120],
+        cost: 12,
         dmg: 8, stun: 16, kb: 240,
       },
       attack2: {
@@ -147,6 +150,7 @@ CK.CHARACTERS = {
         ticks: [4, 4, 6, 6],
         active: [7, 13],
         box: [30, -240, 190, 120],
+        cost: 10,
         dmg: 6, stun: 14, kb: 220,
       },
       attack2: {
@@ -184,6 +188,7 @@ CK.CHARACTERS = {
         lunge: [6, 16, 620],
         armor: [0, 10],
         box: [20, -250, 170, 130],
+        cost: 16,
         dmg: 9, stun: 20, kb: 380,
       },
       attack2: {
@@ -220,6 +225,7 @@ CK.CHARACTERS = {
         active: [9, 20],
         hits: 2, rehit: 7,
         box: [30, -235, 205, 125],
+        cost: 12,
         dmg: 4, stun: 16, kb: 140,
       },
       attack2: {
@@ -255,6 +261,7 @@ CK.CHARACTERS = {
         ticks: [7, 5, 8, 10],
         active: [12, 20],
         box: [30, -235, 195, 125],
+        cost: 12,
         dmg: 11, stun: 22, kb: 420,
       },
       attack2: {
@@ -291,6 +298,7 @@ CK.CHARACTERS = {
         active: [9, 18],
         lunge: [5, 15, 260],
         box: [30, -245, 200, 130],
+        cost: 14,
         dmg: 8, stun: 17, kb: 300,
       },
       attack2: {
@@ -326,6 +334,7 @@ CK.CHARACTERS = {
         ticks: [8, 6, 9, 10],
         active: [14, 23],
         box: [30, -250, 220, 130],
+        cost: 12,
         dmg: 12, stun: 22, kb: 460,
       },
       attack2: {
