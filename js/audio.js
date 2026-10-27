@@ -1,4 +1,4 @@
-// Efeitos sonoros sintetizados com WebAudio (sem arquivos de áudio).
+// Efeitos sonoros sintetizados com WebAudio; só as falas de vitória são arquivos (assets/voice/).
 // play(nome, personagem): se o personagem tem um som próprio com esse nome, toca ele; senão, o genérico.
 CK.Sfx = (() => {
   let ctx = null;
@@ -7,6 +7,20 @@ CK.Sfx = (() => {
   let noiseBuf = null;
   let enabled = true;
   const last = {};          // último instante de cada som (evita empilhar o mesmo som no mesmo tick)
+  let clipEl = null;        // fala gravada tocando agora (só uma por vez)
+
+  // toca um arquivo de áudio; para sozinho em stopClip (quando sai da tela de resultado)
+  function clip(src) {
+    stopClip();
+    clipEl = new Audio(src);
+    clipEl.volume = 0.9;
+    clipEl.play().catch(() => {});
+  }
+
+  function stopClip() {
+    if (clipEl) clipEl.pause();
+    clipEl = null;
+  }
 
   function ac() {
     if (!ctx) {
@@ -608,6 +622,7 @@ CK.Sfx = (() => {
         osc({ type: 'sawtooth', f: 400, f2: 30, dur: 1.4, vol: 0.06, lp: 1200, at: 0.2 });
       },
       jump: () => { whoosh({ f: 300, f2: 1800, dur: 0.16, vol: 0.18 }); osc({ type: 'square', f: 300, f2: 500, dur: 0.08, vol: 0.04 }); },
+      win: () => clip('assets/voice/bolsotron_win.mp3'),
     },
     // ciborgue boêmio: garrafada de vidro, jato borbulhante e propulsores no pulo
     luladroid: {
@@ -633,6 +648,7 @@ CK.Sfx = (() => {
       koVoice: () => voice({ f: 140, f2: 55, dur: 1.3, vowel: 'a', vol: 0.2, vib: [5, 25] }),
       // propulsores
       jump: () => { noise({ type: 'lowpass', f: 1500, f2: 400, dur: 0.3, vol: 0.3 }); voice({ f: 130, dur: 0.1, vowel: 'u', vol: 0.1 }); },
+      win: () => clip('assets/voice/luladroid_win.mp3'),
     },
   };
 
@@ -649,6 +665,7 @@ CK.Sfx = (() => {
         if (fn) fn();
       } catch (e) { /* áudio indisponível */ }
     },
-    setEnabled(v) { enabled = v; },
+    setEnabled(v) { enabled = v; if (!v) stopClip(); },
+    stopClip,
   };
 })();

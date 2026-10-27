@@ -318,7 +318,7 @@ CK.Game = class Game {
     let title = 'Empate!';
     if (this.winner) {
       this.winner.setState('win');
-      this.emit('sfx', 'win');
+      this.emit('sfx', 'win', this.winner.charId);   // quem tem fala de vitória toca a dela
       title = this.bot ? (this.winner.idx === 0 ? 'Você venceu!' : 'Você perdeu!')
         : `${this.names ? this.names[this.winner.idx] : this.winner.def.name} vence!`;
     }

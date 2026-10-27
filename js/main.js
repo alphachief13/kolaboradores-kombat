@@ -46,6 +46,7 @@
 
   function show(name) {
     screen = name;
+    if (name !== 'result') CK.Sfx.stopClip();   // a fala de vitória acaba junto com o resultado
     document.querySelectorAll('.screen').forEach((el) => el.classList.toggle('hidden', el.id !== 'screen-' + name));
     const inGame = ['fight', 'pause', 'result'].includes(name);
     $('#hud').classList.toggle('hidden', !inGame);
