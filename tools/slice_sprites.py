@@ -99,6 +99,24 @@ SHEETS = {
         "hit":     ("Três reações do lutador ao impacto-6.png", 3, 1),
         "ko":      ("Queda cômica do lutador de óculos-7.png", 6, 2),
     },
+    "bolsotron": {
+        "idle":    ("Bolsodroid em guarda cibernética-1.png", 6, 2),
+        "walk":    ("Spritesheet de caminhada do Bolsodroid-2.png", 6, 2),
+        "jump":    ("Spritesheet do salto do Bolsodroid-3.png", 4, 2),
+        "attack1": ("Bolsodroid disparando pistola de energia-4.png", 4, 2),
+        "attack2": ("Bolsodroid dispara canhão de energia-5.png", 5, 1),
+        "hit":     ("Ciborgue recupera o equilíbrio após pane mecânica-6.png", 3, 1),
+        "ko":      ("Bolsodroid desliga em seis poses-7.png", 6, 2),
+    },
+    "luladroid": {
+        "idle":    ("Lulatron em guarda com garrafa de cachaça-1.png", 6, 2),
+        "walk":    ("Lulatron em caminhada mecânica-2.png", 6, 2),
+        "jump":    ("Salto mecânico do Lulatron ciborgue-3.png", 4, 2),
+        "attack1": ("Lulatron golpeia com garrafa reforçada-4.png", 4, 2),
+        "attack2": ("Lulatron dispara rajada âmbar-5.png", 5, 1),
+        "hit":     ("Lulatron reage com garrafa de cachaça-6.png", 3, 1),
+        "ko":      ("Lulatron_ queda cômica em seis quadros-7.png", 6, 2),
+    },
 }
 
 
@@ -471,6 +489,22 @@ MANUAL = {
             [(1340, 0, 1690, 255), (1130, 255, 1660, 793)], [(1660, 0, 1983, 793)],
         ],
     },
+    "bolsotron": {
+        "attack2": [
+            [(0, 0, 355, 793)], [(355, 0, 706, 793)], [(706, 0, 1230, 793)],
+            [(1230, 0, 1645, 793)], [(1645, 0, 1983, 793)],
+        ],
+        "ko": [
+            [(0, 0, 500, 600), (500, 385, 575, 600)], [(500, 0, 1045, 330), (500, 330, 990, 600)], [(1045, 0, 1536, 330), (990, 330, 1536, 600)],
+            [(0, 600, 505, 1024)], [(505, 600, 985, 1024)], [(985, 600, 1536, 1024)],
+        ],
+    },
+    "luladroid": {
+        "attack2": [
+            [(0, 0, 345, 793)], [(345, 0, 700, 793)], [(700, 0, 1075, 793)],
+            [(1075, 0, 1640, 793)], [(1640, 0, 1983, 793)],
+        ],
+    },
 }
 
 # quadros cujo corte à direita atravessa um brilho: esmaece as últimas n colunas (px da folha);
@@ -512,6 +546,12 @@ FX = [
      "box": (1200, 115, 1330, 192), "angle": 0,
      # some também o rastro de fogo e a explosão perto da mão (a bomba estoura onde cai)
      "erase": [(1085, 110, 1335, 205), (1475, 155, 1690, 300), (1598, 300, 1690, 350)]},
+    {"name": "greenbeam", "char": "bolsotron", "anim": "attack2", "frame": 2,
+     "box": (1085, 190, 1232, 440), "angle": 0, "fade": 0.25},
+    # o jato de cachaça: as gotas que caem abaixo da caixa também somem do quadro
+    {"name": "amberspray", "char": "luladroid", "anim": "attack2", "frame": 3,
+     "box": (1385, 255, 1640, 520), "angle": 0, "fade": 0.15,
+     "erase": [(1385, 255, 1640, 520), (1470, 515, 1640, 565)]},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -526,6 +566,8 @@ STAND_H = {
     "pastor": {"idle": 465, "walk": 465, "jump": 520, "attack1": 556, "attack2": 435, "hit": 630, "ko": 470},
     "bandicoot": {"idle": 450, "walk": 476, "jump": 515, "attack1": 512, "attack2": 395, "hit": 660, "ko": 465},
     "cristorey": {"idle": 486, "walk": 492, "jump": 540, "attack1": 620, "attack2": 520, "hit": 700, "ko": 560},
+    "bolsotron": {"idle": 490, "walk": 492, "jump": 560, "attack1": 589, "attack2": 507, "hit": 678, "ko": 490},
+    "luladroid": {"idle": 465, "walk": 462, "jump": 540, "attack1": 525, "attack2": 445, "hit": 690, "ko": 475},
 }
 
 if __name__ == "__main__":

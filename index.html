@@ -19,12 +19,14 @@
       <div class="bar-box p1">
         <div class="bar"><div class="bar-trail"></div><div class="bar-fill"></div></div>
         <div class="energy"><div class="energy-fill"></div></div>
+        <div class="stamina"><div class="stamina-fill"></div></div>
         <div class="bar-name"></div>
       </div>
       <div id="timer">99</div>
       <div class="bar-box p2">
         <div class="bar"><div class="bar-trail"></div><div class="bar-fill"></div></div>
         <div class="energy"><div class="energy-fill"></div></div>
+        <div class="stamina"><div class="stamina-fill"></div></div>
         <div class="bar-name"></div>
       </div>
     </div>
@@ -56,14 +58,32 @@
     <section id="screen-menu" class="screen hidden">
       <h1 class="logo"><span>Kolaboradores</span><span>Kombat</span></h1>
       <nav class="menu">
-        <button data-action="play-cpu">1 Jogador · vs CPU</button>
-        <button data-action="play-cup">Torneio vs CPU</button>
-        <button data-action="play-pvp">2 Jogadores</button>
-        <button data-action="play-net">Jogar em rede</button>
+        <button data-action="play">Jogar</button>
         <button data-action="controls">Controles</button>
         <button data-action="settings">Configurações</button>
       </nav>
       <p class="foot">Lute contra o computador, com um amigo no mesmo teclado ou com controles, ou em rede com outros computadores</p>
+    </section>
+
+    <!-- Jogar: contra a CPU, local ou em rede -->
+    <section id="screen-play" class="screen hidden">
+      <h1 class="logo"><span>Kolaboradores</span><span>Kombat</span></h1>
+      <nav class="menu">
+        <button data-action="play-vs-cpu">vs CPU</button>
+        <button data-action="play-pvp">2 Jogadores</button>
+        <button data-action="play-net">Em rede (LAN)</button>
+        <button data-action="back">Voltar</button>
+      </nav>
+    </section>
+
+    <!-- Contra a CPU: luta avulsa ou torneio -->
+    <section id="screen-vscpu" class="screen hidden">
+      <h1 class="logo"><span>Kolaboradores</span><span>Kombat</span></h1>
+      <nav class="menu">
+        <button data-action="play-cpu">Luta rápida</button>
+        <button data-action="play-cup">Torneio</button>
+        <button data-action="play">Voltar</button>
+      </nav>
     </section>
 
     <!-- Controles -->
@@ -119,7 +139,7 @@
         </div>
         <p class="net-status" id="net-status"></p>
         <p class="hint">Todos os computadores precisam estar na mesma rede (Wi-Fi ou cabo) e com internet para se conectarem.</p>
-        <button data-action="back">Voltar</button>
+        <button data-action="play">Voltar</button>
       </div>
     </section>
 
@@ -133,7 +153,7 @@
             <div id="lobby-qr"></div>
             <button class="small" data-action="net-copy">Copiar link</button>
           </div>
-          <p class="hint">Nos outros computadores: <b>Jogar em rede → Entrar numa sala</b> e digite o código, ou abra o link.</p>
+          <p class="hint">Nos outros computadores: <b>Jogar → Em rede (LAN) → Entrar numa sala</b> e digite o código, ou abra o link.</p>
         </div>
         <div class="lobby-main">
           <h2>Sala</h2>
@@ -169,6 +189,7 @@
       <p class="hint" id="cup-hint"></p>
       <div class="rematch">
         <button data-action="cup-fight" id="cup-fight">Lutar!</button>
+        <button data-action="cup-pick" id="cup-pick">Trocar lutador</button>
         <button data-action="play-cup" id="cup-again">Novo torneio</button>
         <button class="small" data-action="menu" id="cup-quit">Desistir</button>
       </div>
@@ -196,6 +217,8 @@
         <h2>Pausado</h2>
         <button data-action="resume">Continuar</button>
         <button data-action="menu" class="local-only">Menu principal</button>
+        <button data-action="select" class="net-only player-only tourney-only">Trocar lutador no próximo round</button>
+        <button data-action="cup-pick" class="cup-only">Trocar lutador</button>
         <button data-action="net-lobby" class="net-only host-only">Voltar à sala</button>
         <button data-action="net-leave" class="net-only">Sair da sala</button>
         <p class="hint net-only">Em rede a luta não pausa.</p>
@@ -213,7 +236,7 @@
         </div>
         <div class="rematch">
           <button data-action="cup-next" class="cup-only" id="cup-next">Continuar</button>
-          <button data-action="select" class="no-tourney no-cup player-only">Trocar personagens</button>
+          <button data-action="select" class="player-only" id="result-select">Trocar personagens</button>
           <button data-action="menu" class="local-only">Menu principal</button>
           <button data-action="net-lobby" class="net-only host-only">Voltar à sala</button>
           <button data-action="net-leave" class="net-only small">Sair da sala</button>

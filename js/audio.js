@@ -224,6 +224,7 @@ CK.Sfx = (() => {
       kick({ f: 220, f2: 120, dur: 0.08, vol: 0.3 });
     },
     jump: () => whoosh({ f: 400, f2: 2200, dur: 0.16, vol: 0.18 }),
+    dash: () => { whoosh({ f: 700, f2: 3200, dur: 0.12, vol: 0.22 }); noise({ type: 'lowpass', f: 600, dur: 0.08, vol: 0.18 }); },
     land: () => {
       kick({ f: 95, f2: 40, dur: 0.12, vol: 0.4 });
       noise({ type: 'lowpass', f: 500, dur: 0.1, vol: 0.25, wet: 0.02 });
@@ -578,6 +579,60 @@ CK.Sfx = (() => {
       hurt: () => voice({ f: 140, f2: 105, dur: 0.2, vowel: 'u', vol: 0.18 }),
       koVoice: () => voice({ f: 150, f2: 60, dur: 1.2, vowel: 'o', vol: 0.2, vib: [5, 20] }),
       jump: () => { whoosh({ f: 300, f2: 1600, dur: 0.18, vol: 0.2 }); voice({ f: 130, dur: 0.1, vowel: 'u', vol: 0.12 }); },
+    },
+    // ciborgue patriota: pistola de laser, canhão carregando e servos metálicos
+    bolsotron: {
+      // "piu!" do laser
+      a1: () => {
+        osc({ type: 'square', f: 1800, f2: 300, dur: 0.14, vol: 0.1 });
+        noise({ type: 'highpass', f: 3000, dur: 0.05, vol: 0.2 });
+      },
+      a1Hit: () => {
+        kick({ f: 140, f2: 50, dur: 0.12, vol: 0.5 });
+        osc({ type: 'sawtooth', f: 900, f2: 200, dur: 0.1, vol: 0.08 });
+      },
+      // canhão carregando: zumbido que sobe
+      a2: () => osc({ type: 'sawtooth', f: 120, f2: 900, dur: 0.55, vol: 0.07, vib: [20, 30], lp: 2500 }),
+      shot: () => {
+        osc({ type: 'sawtooth', f: 900, f2: 120, dur: 0.5, vol: 0.12, dist: 3, wet: 0.3 });
+        noise({ type: 'bandpass', f: 2000, f2: 600, q: 1, dur: 0.5, vol: 0.3 });
+      },
+      shotHit: () => {
+        kick({ f: 100, f2: 30, dur: 0.45, vol: 0.9 });
+        noise({ type: 'lowpass', f: 4000, f2: 300, dur: 0.5, vol: 0.5, dist: 2, wet: 0.3 });
+      },
+      hurt: () => { voice({ f: 150, f2: 110, dur: 0.2, vowel: 'e', vol: 0.17 }); osc({ type: 'square', f: 600, f2: 200, dur: 0.1, vol: 0.04 }); },
+      // desligando: voz e motor caindo juntos
+      koVoice: () => {
+        voice({ f: 160, f2: 60, dur: 1.1, vowel: 'a', vol: 0.18 });
+        osc({ type: 'sawtooth', f: 400, f2: 30, dur: 1.4, vol: 0.06, lp: 1200, at: 0.2 });
+      },
+      jump: () => { whoosh({ f: 300, f2: 1800, dur: 0.16, vol: 0.18 }); osc({ type: 'square', f: 300, f2: 500, dur: 0.08, vol: 0.04 }); },
+    },
+    // ciborgue boêmio: garrafada de vidro, jato borbulhante e propulsores no pulo
+    luladroid: {
+      a1: () => whoosh({ f: 250, f2: 1800, dur: 0.24, vol: 0.3 }),
+      // vidro estourando
+      a1Hit: () => {
+        kick({ f: 120, f2: 40, dur: 0.25, vol: 0.9 });
+        for (let i = 0; i < 6; i++) bell({ f: rnd(2500, 5000), dur: 0.15, vol: 0.04, at: rnd(0, 0.12) });
+        noise({ type: 'highpass', f: 2500, dur: 0.15, vol: 0.4 });
+      },
+      // a garrafa sendo sacudida
+      a2: () => noise({ type: 'bandpass', f: 900, q: 2, dur: 0.5, vol: 0.2, trem: [14, 0.8] }),
+      // jato borbulhando
+      shot: () => {
+        noise({ type: 'bandpass', f: 600, f2: 1800, q: 1.5, dur: 0.6, vol: 0.35, trem: [25, 0.6] });
+        for (let i = 0; i < 6; i++) osc({ type: 'sine', f: rnd(400, 900), f2: rnd(900, 1500), dur: 0.06, vol: 0.05, at: rnd(0, 0.45) });
+      },
+      shotHit: () => {
+        noise({ type: 'lowpass', f: 2000, f2: 300, dur: 0.4, vol: 0.5 });   // "splash"
+        kick({ f: 90, f2: 40, dur: 0.3, vol: 0.6 });
+      },
+      hurt: () => voice({ f: 130, f2: 100, dur: 0.22, vowel: 'o', vol: 0.18 }),
+      koVoice: () => voice({ f: 140, f2: 55, dur: 1.3, vowel: 'a', vol: 0.2, vib: [5, 25] }),
+      // propulsores
+      jump: () => { noise({ type: 'lowpass', f: 1500, f2: 400, dur: 0.3, vol: 0.3 }); voice({ f: 130, dur: 0.1, vowel: 'u', vol: 0.1 }); },
     },
   };
 

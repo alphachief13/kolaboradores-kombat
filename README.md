@@ -12,37 +12,51 @@ Jogue em `https://alphachief13.github.io/kolaboradores-kombat/` ou abra o `index
 | Pular          | `W`       | `↑`               | A          |
 | Ataque rápido  | `F`       | `K` ou `Num 1`    | X          |
 | Ataque forte   | `G`       | `L` ou `Num 2`    | Y / B      |
+| Dash           | `E` (ou toque duplo em `A`/`D`) | `J` ou `Num 0` (ou toque duplo em `←`/`→`) | LT / RT |
 | Defender       | `S` ou `H` (segure) | `↓` ou `Num 3` (segure) | LB / RB / baixo |
 | Pausar         | `Esc`     | `Esc`             |            |
 
 **Defesa**: segurando a defesa de frente para o golpe você leva só 20% do dano e não sofre efeitos (confuso, enrolado).
 O escudo nunca quebra.
 
-**Energia**: os ataques gastam energia, a barra azul embaixo da vida — o rápido gasta pouco, o forte (projétil)
-gasta muito. Ela recupera sozinha quando você não está atacando; sem energia, não dá para ficar só batendo.
-Quando a barra acende, dá para disparar o ataque forte de novo.
+**Energia**: o ataque forte (projétil) gasta energia, a barra azul embaixo da vida. Ela recupera sozinha;
+quando acende, dá para disparar de novo.
+
+**Fôlego**: o ataque rápido e o dash gastam fôlego, a barra amarela embaixo da energia. Ele volta rápido
+quando você para de bater; quando pisca, não dá nem para mais um golpe.
+
+**Dash**: arrancada para o lado que estiver apertado (sem direção, para trás). No começo dele o lutador fica
+transparente e não pode ser atingido, então dá para atravessar golpes e projéteis com o tempo certo.
 
 **Sem paredes**: quem passa da borda da arena reaparece do outro lado.
 
 **Mouse**: durante a luta o mouse também controla o jogador 1 (em rede, quem está em cada computador):
 botão esquerdo dá o ataque rápido e botão direito o ataque forte, à distância.
 
-Modos: **1 Jogador · vs CPU** (o jogador 2 é controlado pelo computador; dificuldade Fácil, Normal ou Difícil em Configurações; o jogador pode usar as teclas de qualquer um dos dois lados) **Torneio vs CPU** (mata-mata de 8 contra lutadores sorteados: quartas, semifinal e final;
-a CPU fica mais forte a cada rodada, começando um nível abaixo da dificuldade escolhida; quem perde tenta a mesma luta de novo)
-e **2 Jogadores** (local).
+Modos (menu **Jogar**):
+
+- **vs CPU → Luta rápida**: o jogador 2 é controlado pelo computador (dificuldade Fácil, Normal ou Difícil em Configurações;
+  o jogador pode usar as teclas de qualquer um dos dois lados).
+- **vs CPU → Torneio**: mata-mata de 8 contra lutadores sorteados (quartas, semifinal e final). A CPU fica mais forte a cada
+  rodada, começando um nível abaixo da dificuldade escolhida; quem perde tenta a mesma luta de novo. Dá para trocar de
+  lutador no chaveamento, na pausa ou no resultado.
+- **2 Jogadores**: local, no mesmo teclado ou com controles.
+- **Em rede (LAN)**: ver abaixo.
 
 Fluxo: menu → seleção de personagem (cada jogador escolhe e confirma) → contagem 3, 2, 1, FIGHT! → luta → K.O. → revanche quando os dois aceitam.
 
 ## Jogar em rede
 
-1. Num computador: **Jogar em rede → Criar sala**. Aparece um código de 4 números, um QR code e o botão **Copiar link**.
-2. Nos outros: **Jogar em rede → Entrar numa sala** e digite o código (ou abra o link / leia o QR code).
+1. Num computador: **Jogar → Em rede (LAN) → Criar sala**. Aparece um código de 4 números, um QR code e o botão **Copiar link**.
+2. Nos outros: **Jogar → Em rede (LAN) → Entrar numa sala** e digite o código (ou abra o link / leia o QR code).
 3. Na sala, o anfitrião escolhe **1x1** ou **Torneio** (melhor de 1 ou de 3) e o tempo da luta, e aperta **Começar**.
    Cada um pode se marcar como **Jogador** ou **Espectador**; o anfitrião pode mudar o de qualquer um.
 
 - **1x1**: exatamente 2 jogadores; os outros assistem. Revanche e troca de personagens como no modo local.
 - **Torneio**: 2 a 8 jogadores em mata-mata sorteado (quem sobra passa direto). Quem não está lutando assiste.
   Quem sai da sala perde por W.O. No torneio, cada um tem 30 s para escolher o lutador.
+  Numa melhor de 3, quem quiser trocar de lutador para o próximo round aperta o ataque forte depois do K.O.
+  (ou clica em **Trocar lutador**, também no menu do `Esc`).
 - Espectadores podem entrar a qualquer momento, inclusive no meio de uma luta.
 - Cada computador controla um lutador com qualquer um dos dois esquemas de teclas (ou o controle).
   `Esc` abre o menu, mas a luta continua.
@@ -72,6 +86,8 @@ Depois de cada push, o jogo fica em `https://alphachief13.github.io/kolaboradore
 - **Pastor** (pregador): golpe da palavra (rápido) e onda de luz (onda dourada que cruza a arena; dá para pular por cima).
 - **Cordeiro Bandicoot** (acrobata): boné giratório (rápido) e boné cometa (boné lançado em arco que estoura onde cai; fuja para o lado).
 - **Viva Cristo Rey** (fisiculturista): soco explosivo (rápido, mas lento para sair) e bomba cartunesca (arremessada em arco, quica uma vez e explode em área; pule alto ou fuja para longe).
+- **Bolsotron** (ciborgue patriota): pistola de energia (rápido, de longo alcance) e canhão verde-amarelo (raio de energia, o projétil mais rápido do jogo; pule cedo).
+- **Luladroid** (ciborgue boêmio): garrafada (rápido, lento para sair, mas pesado) e rajada de cachaça (jato de curto alcance que deixa o rival tonto, com os controles invertidos).
 
 ## Estrutura
 

@@ -8,6 +8,7 @@ CK.Controls = (() => {
     a1:    { label: 'rápido', icon: '👊' },
     a2:    { label: 'forte', icon: '💥' },
     block: { label: 'defender', icon: '🛡' },
+    dash:  { label: 'dash', icon: '💨' },
   };
 
   // linhas do teclado (códigos de KeyboardEvent.code); null = espaço vazio. O recuo de cada
@@ -65,9 +66,10 @@ CK.Controls = (() => {
   const ROWS = [
     { name: 'Andar', acts: ['left', 'right'], pad: 'Direcional / analógico', tip: 'Para trás você anda mais devagar.' },
     { name: 'Pular', acts: ['up'], pad: 'A', tip: 'Pule por cima dos especiais que vêm pelo chão.' },
-    { name: 'Ataque rápido', acts: ['a1'], pad: 'X', tip: 'Golpe de perto que sai na hora. Funciona no ar.' },
+    { name: 'Ataque rápido', acts: ['a1'], pad: 'X', tip: 'Golpe de perto que sai na hora. Funciona no ar. Gasta fôlego (barra amarela).' },
     { name: 'Ataque forte', acts: ['a2'], pad: 'Y / B', tip: 'O especial do personagem. Gasta energia (barra azul), que volta sozinha.' },
     { name: 'Defender', acts: ['block'], pad: 'LB / RB / ↓', tip: 'Segure de frente para o golpe: leva só um pouco de dano e o escudo nunca quebra.' },
+    { name: 'Dash', acts: ['dash'], pad: 'LT / RT', tip: 'Arrancada para o lado apertado (sem direção, para trás). Toque duas vezes na direção também. No começo atravessa golpes. Gasta fôlego.' },
   ];
 
   function tableHtml() {

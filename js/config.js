@@ -13,8 +13,14 @@ window.CK = {
   AIR: 330,
   PUSH_DIST: 115,     // distância mínima entre os dois lutadores
   MAX_HP: 100,
-  ENERGY: 100,        // energia (stamina) dos ataques: cada golpe gasta o seu "cost"
+  ENERGY: 100,        // energia do ataque forte (cada disparo gasta "cost")
   ENERGY_REGEN: 0.25, // energia recuperada por tick (15 por segundo)
+  STAMINA: 100,       // fôlego do golpe rápido ("stamina" de cada um) e do dash
+  STAMINA_REGEN: 0.35, // recuperada por tick (21 por segundo) quando não está golpeando nem dando dash
+  DASH_COST: 30,
+  DASH_SPEED: 1900,   // velocidade no início do dash (vai freando)
+  DASH_TICKS: 16,     // duração total; os últimos 4 são de recuperação
+  DASH_IFRAMES: 8,    // primeiros ticks do dash sem poder ser atingido (dá para atravessar golpes)
   CHIP: 0.2,          // fração do dano que passa pela defesa
   HURT_W: 100,
   HURT_H: 270,
@@ -41,7 +47,7 @@ CK.CHARACTERS = {
         ticks: [6, 5, 7, 9],
         active: [11, 18],
         box: [30, -240, 185, 130],
-        cost: 10,
+        stamina: 14,
         dmg: 9, stun: 17, kb: 280,
       },
       attack2: {
@@ -72,12 +78,12 @@ CK.CHARACTERS = {
     attacks: {
       attack1: {
         name: 'Golpe de Aba',
-        desc: 'Uma cabeçada de lado com a aba do boné. Certeira, mas cansa.',
+        desc: 'Uma cabeçada de lado com a aba do boné. Certeira, mas cansa rápido.',
         preview: 2,
         ticks: [6, 6, 8, 10],
         active: [11, 19],
         box: [30, -245, 190, 125],
-        cost: 14,
+        stamina: 18,
         dmg: 7, stun: 16, kb: 260,
       },
       attack2: {
@@ -113,7 +119,7 @@ CK.CHARACTERS = {
         ticks: [5, 5, 7, 8],
         active: [10, 18],
         box: [40, -235, 220, 120],
-        cost: 12,
+        stamina: 16,
         dmg: 8, stun: 16, kb: 240,
       },
       attack2: {
@@ -150,7 +156,7 @@ CK.CHARACTERS = {
         ticks: [4, 4, 6, 6],
         active: [7, 13],
         box: [30, -240, 190, 120],
-        cost: 10,
+        stamina: 12,
         dmg: 6, stun: 14, kb: 220,
       },
       attack2: {
@@ -188,7 +194,7 @@ CK.CHARACTERS = {
         lunge: [6, 16, 620],
         armor: [0, 10],
         box: [20, -250, 170, 130],
-        cost: 16,
+        stamina: 22,
         dmg: 9, stun: 20, kb: 380,
       },
       attack2: {
@@ -225,7 +231,7 @@ CK.CHARACTERS = {
         active: [9, 20],
         hits: 2, rehit: 7,
         box: [30, -235, 205, 125],
-        cost: 12,
+        stamina: 16,
         dmg: 4, stun: 16, kb: 140,
       },
       attack2: {
@@ -261,7 +267,7 @@ CK.CHARACTERS = {
         ticks: [7, 5, 8, 10],
         active: [12, 20],
         box: [30, -235, 195, 125],
-        cost: 12,
+        stamina: 16,
         dmg: 11, stun: 22, kb: 420,
       },
       attack2: {
@@ -298,7 +304,7 @@ CK.CHARACTERS = {
         active: [9, 18],
         lunge: [5, 15, 260],
         box: [30, -245, 200, 130],
-        cost: 14,
+        stamina: 18,
         dmg: 8, stun: 17, kb: 300,
       },
       attack2: {
@@ -334,7 +340,7 @@ CK.CHARACTERS = {
         ticks: [8, 6, 9, 10],
         active: [14, 23],
         box: [30, -250, 220, 130],
-        cost: 12,
+        stamina: 16,
         dmg: 12, stun: 22, kb: 460,
       },
       attack2: {
@@ -347,6 +353,79 @@ CK.CHARACTERS = {
         projectile: {
           at: 26, fx: 'bomb', kind: 'bounce', speed: 560, vy: -820, grav: 2400, bounce: 0.45, bounces: 1,
           height: -180, size: [55, 55], spin: 6, blast: 80, dmg: 14, stun: 28, kb: 520,
+        },
+      },
+    },
+  },
+  bolsotron: {
+    name: 'Bolsotron',
+    theme: 'Ciborgue patriota',
+    desc: 'Armadura verde e amarela, olho de laser e a bandeira de capa. Atira primeiro e pergunta depois.',
+    color: '#1f9e3a',
+    spark: '#c6ff3a',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    role: 'Atirador',
+    // atributos medianos; a pistola alcança longe e o canhão é o projétil mais rápido do jogo
+    stats: { hp: 100, walk: 330, back: 250, air: 320, jump: 1150, weight: 0.9 },
+    attacks: {
+      attack1: {
+        name: 'Pistola de Energia',
+        desc: 'Um disparo à queima-roupa. Fraco, mas alcança mais longe que qualquer soco.',
+        preview: 2,
+        ticks: [5, 5, 7, 8],
+        active: [10, 17],
+        box: [40, -245, 230, 110],
+        stamina: 15,
+        dmg: 7, stun: 15, kb: 230,
+      },
+      attack2: {
+        name: 'Canhão Verde-Amarelo',
+        desc: 'Carrega o punho e dispara um raio de energia que atravessa a arena num piscar de olhos. Pule cedo!',
+        preview: 1,
+        ticks: [12, 10, 14, 14, 12],
+        heavy: true,
+        cost: 45,
+        projectile: {
+          at: 22, fx: 'greenbeam', speed: 1150, height: -140, size: [80, 70],
+          style: 'energy', dmg: 12, stun: 22, kb: 380,
+        },
+      },
+    },
+  },
+  luladroid: {
+    name: 'Luladroid',
+    theme: 'Ciborgue boêmio',
+    desc: 'Barba branca, armadura vermelha e uma garrafa de cachaça que nunca sai da mão — nem na hora de bater.',
+    color: '#d12a2a',
+    spark: '#ffb02e',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    role: 'Brigão',
+    // pesado e de muita vida, mas lento; a cachaça deixa o rival tonto (controles invertidos)
+    stats: { hp: 110, walk: 290, back: 230, air: 290, jump: 1120, weight: 0.8 },
+    attacks: {
+      attack1: {
+        name: 'Garrafada',
+        desc: 'Gira a garrafa reforçada e estoura no rival. Lenta para sair, mas pesada.',
+        preview: 2,
+        ticks: [7, 6, 7, 9],
+        active: [13, 20],
+        box: [30, -240, 200, 130],
+        stamina: 18,
+        dmg: 10, stun: 20, kb: 380,
+      },
+      attack2: {
+        name: 'Rajada de Cachaça',
+        desc: 'Um jato âmbar de curto alcance. Quem for pego fica tonto, com os controles invertidos.',
+        preview: 2,
+        ticks: [12, 10, 10, 16, 12],
+        heavy: true,
+        cost: 50,
+        projectile: {
+          at: 32, fx: 'amberspray', kind: 'wave', speed: 800, range: 480, grow: 1.3,
+          height: -140, size: [80, 90], scale: 0.9, style: 'energy', dmg: 8, stun: 20, kb: 250,
+          status: { invert: 150 },
         },
       },
     },

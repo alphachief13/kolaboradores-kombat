@@ -31,7 +31,7 @@ CK.Bot = class Bot {
   }
 
   think(me, opp, game) {
-    const out = { left: false, right: false, up: false, a1: false, a2: false, block: false, upP: false, a1P: false, a2P: false, blockP: false };
+    const out = { left: false, right: false, up: false, a1: false, a2: false, block: false, dash: false, upP: false, a1P: false, a2P: false, blockP: false, dashP: false };
     this.t++;
     if (!game.controlsEnabled || me.state === 'ko') { this.queue = []; return out; }
 
@@ -90,6 +90,11 @@ CK.Bot = class Bot {
       else if (q.act === 'a2') out.a2P = out.a2 = true;
       else if (q.act === 'jump') out.upP = out.up = true;
       else if (q.act === 'back') { this.move = -1; this.next = this.t + 18; }
+      else if (q.act === 'dashIn' || q.act === 'dashOut') {
+        // a direção do dash é a do movimento deste tick
+        this.move = q.act === 'dashIn' ? 1 : -1;
+        out.dashP = out.dash = true;
+      }
       else if (q.act === 'block') this.blockUntil = this.t + 30;
       return false;
     });
@@ -129,6 +134,7 @@ CK.Bot = class Bot {
         this.move = 0;
       } else if (rnd() < (losing ? 0.6 : 0.35)) {
         this.move = -1;
+        if (me.stamina > 60 && rnd() < lv.dodge * 0.5) this.later('dashOut', 1);   // foge de dash
       } else {
         this.move = rnd() < 0.5 ? 0 : 1;
       }
@@ -149,6 +155,7 @@ CK.Bot = class Bot {
         this.move = 0;
       } else {
         this.move = rnd() < 0.85 ? 1 : 0;
+        if (this.move && me.stamina > 70 && rnd() < lv.aggro * 0.25) this.later('dashIn', 1);   // encurta a distância
       }
     }
   }

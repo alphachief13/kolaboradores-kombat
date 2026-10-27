@@ -9,12 +9,12 @@ CK.Online = (() => {
   const HOST_DELAY = 1;        // ticks de atraso na tecla do anfitrião, para empatar com o atraso da rede dos outros
   const PICK_TIME = 30;        // s para escolher o lutador no torneio (depois confirma o que estiver marcado)
   const BRACKET_TIME = 10;     // s no chaveamento antes da próxima luta
-  const NEXT_ROUND = 150;      // ticks entre o fim de um round e o próximo numa melhor de 3
+  const NEXT_ROUND = 240;      // ticks entre o fim de um round e o próximo numa melhor de 3
   const TIMEOUT = 8000;        // ms sem notícias = desconectado
   const QR_LIB = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
 
   // entrada de um tick em 10 bits (5 segurando + 5 apertou agora)
-  const BITS = ['left', 'right', 'up', 'a1', 'a2', 'block', 'upP', 'a1P', 'a2P', 'blockP', 'leftP', 'rightP'];
+  const BITS = ['left', 'right', 'up', 'a1', 'a2', 'block', 'upP', 'a1P', 'a2P', 'blockP', 'leftP', 'rightP', 'dash', 'dashP'];
   const PRESS = 0b1111100000;
   const encode = (inp) => BITS.reduce((b, k, i) => (inp[k] ? b | (1 << i) : b), 0);
   const decode = (b) => Object.fromEntries(BITS.map((k, i) => [k, !!(b & (1 << i))]));
@@ -301,7 +301,7 @@ CK.Online = (() => {
         if (slot >= 0) hostRematch(slot);
         break;
       case 'reselect':
-        if (slot >= 0) hostReselect();
+        if (slot >= 0) hostReselect(slot);
         break;
       case 'role': {
         const mm = member(id);
@@ -365,9 +365,10 @@ CK.Online = (() => {
     };
   }
 
-  function startSelect() {
+  // ok: quem já entra confirmado (no torneio, só quem pediu para trocar escolhe de novo)
+  function startSelect(ok = [false, false]) {
     const M = S.match;
-    S.sel = { idx: M.picks.map((id) => CK.CHAR_IDS.indexOf(id)), ok: [false, false] };
+    S.sel = { idx: M.picks.map((id) => CK.CHAR_IDS.indexOf(id)), ok };
     S.selT = M.tourney ? PICK_TIME * 60 : 0;
     S.startT = 0;
     const msg = selectMsg();
@@ -406,8 +407,19 @@ CK.Online = (() => {
     if (S.view === 'fight' && !S.match.tourney && S.game) S.game.acceptRematch(slot);
   }
 
-  function hostReselect() {
-    if (S.view === 'fight' && !S.match.tourney) startSelect();
+  // no torneio, a troca vale para o próximo round da melhor de N (cada luta nova já começa na escolha)
+  function hostReselect(slot) {
+    if (S.view !== 'fight') return;
+    const M = S.match;
+    if (!M.tourney) return startSelect();
+    if (M.score.some((s) => s >= M.need)) return;
+    M.swap = M.swap || [false, false];
+    if (M.swap[slot]) return;
+    M.swap[slot] = true;
+    S.link.broadcast({ t: 'match', match: M });
+    const text = `${M.names[slot]} vai trocar de lutador no próximo round`;
+    S.link.broadcast({ t: 'toast', text });
+    toast(text);
   }
 
   // fim de um round no torneio: decide a luta (melhor de N) ou começa o próximo round
@@ -415,7 +427,11 @@ CK.Online = (() => {
     const M = S.match;
     const w = M.score.findIndex((s) => s >= M.need);
     if (w >= 0) matchDecided(M.slots[w]);
-    else S.game.reset();
+    else if (M.swap) {
+      const ok = M.swap.map((s) => !s);
+      M.swap = null;
+      startSelect(ok);
+    } else S.game.reset();
   }
 
   function toLobby() {
@@ -526,7 +542,11 @@ CK.Online = (() => {
         r.pressed = 0;
         return s;
       });
-      if (S.match.tourney && g.phase === 'over') inp = [NONE, NONE];
+      if (S.match.tourney && g.phase === 'over') {
+        // entre os rounds, o ataque forte pede para trocar de lutador
+        inp.forEach((p, i) => { if (p.a2P) hostReselect(i); });
+        inp = [NONE, NONE];
+      }
       g.tick(inp);
       S.link.broadcast({ t: 'snap', s: g.serialize(), e: g.events.splice(0) });
       if (S.match.tourney && g.phase === 'over' && ++S.overT === NEXT_ROUND) roundOver();
@@ -801,7 +821,7 @@ CK.Online = (() => {
 
     reselect() {
       if (mySlot() < 0) return;
-      if (S.host) hostReselect();
+      if (S.host) hostReselect(mySlot());
       else S.link.send({ t: 'reselect' });
     },
 
@@ -816,6 +836,7 @@ CK.Online = (() => {
         if (M.tourney) {
           const decided = M.score.some((s) => s >= M.need);
           hint = `${M.names[0]} ${M.score[0]} × ${M.score[1]} ${M.names[1]} · ${decided ? 'voltando ao chaveamento…' : 'próximo round em instantes…'}`;
+          if (!decided && slot >= 0) hint += '<br>Quer trocar de lutador? Aperte seu ataque forte (<kbd>G</kbd> / <kbd>L</kbd>) ou clique em Trocar lutador.';
         } else if (slot >= 0) {
           hint = 'Revanche? Aperte seu ataque rápido (<kbd>F</kbd> / <kbd>K</kbd>) ou clique no seu botão.';
         } else {

@@ -54,6 +54,10 @@
     const first = document.querySelector(`#screen-${name} button`);
     if (first && name !== 'select') first.focus({ preventScroll: true });
     CK.Online.onShow(name);
+    // no torneio só o próprio lutador muda (em rede, a partir do próximo round)
+    if (name === 'result') {
+      $('#result-select').textContent = mode === 'cup' || document.body.classList.contains('tourney') ? 'Trocar lutador' : 'Trocar personagens';
+    }
   }
 
   function startFight() {
@@ -107,11 +111,14 @@
     if (!btn) return;
     CK.Sfx.play('move');
     switch (btn.dataset.action) {
+      case 'play': show('play'); break;
+      case 'play-vs-cpu': show('vscpu'); break;
       case 'play-cpu': mode = 'cpu'; openSelect(); break;
       case 'play-pvp': mode = 'pvp'; openSelect(); break;
       case 'play-cup': mode = 'cup'; cup = null; openSelect(); break;
       case 'cup-fight': cupFight(); break;
       case 'cup-next': cupNext(); break;
+      case 'cup-pick': cupPick(); break;
       case 'play-net': show('net'); CK.Online.open(); break;
       case 'controls': show('controls'); break;
       case 'intro-go': if (game) game.skipIntro(); break;
@@ -125,7 +132,11 @@
       case 'back': show('menu'); break;
       case 'resume': show('fight'); break;
       case 'menu': toMenu(); break;
-      case 'select': if (mode === 'net') CK.Online.reselect(); else { game = null; openSelect(); } break;
+      case 'select':
+        if (mode === 'net') CK.Online.reselect();
+        else if (mode === 'cup') cupPick();
+        else { game = null; openSelect(); }
+        break;
       case 'rematch-p1':
       case 'rematch-p2':
         if (mode === 'net') CK.Online.rematch();
@@ -139,7 +150,8 @@
     if (screen === 'fight') show('pause');
     else if (screen === 'pause') show('fight');
     else if (screen === 'select') selectBack();
-    else if (['controls', 'settings', 'net'].includes(screen)) show('menu');
+    else if (screen === 'vscpu' || screen === 'net') show('play');
+    else if (['controls', 'settings', 'play'].includes(screen)) show('menu');
   });
 
   // ---------- seleção de personagem ----------
@@ -239,7 +251,8 @@
     if (mode === 'cup' && sel.ok[0]) sel.ok[0] = false;
     else if (sel.ok[1]) sel.ok[1] = false;
     else if (sel.ok[0]) sel.ok[0] = false;
-    else return show('menu');
+    else if (mode === 'cup' && cup) return showCup();
+    else return show(mode === 'pvp' ? 'play' : 'vscpu');
     renderSelect();
   }
 
@@ -255,7 +268,7 @@
     CK.Sfx.play('confirm');
     picked(p);
     if (mode === 'cup') {
-      setTimeout(() => { if (screen === 'select' && sel.ok[0]) startCup(CK.CHAR_IDS[sel.idx[0]]); }, 900);
+      setTimeout(() => { if (screen === 'select' && sel.ok[0]) cupPicked(CK.CHAR_IDS[sel.idx[0]]); }, 900);
     } else if (mode !== 'net' && sel.ok[0] && sel.ok[1]) {
       picks = sel.idx.map((i) => CK.CHAR_IDS[i]);
       setTimeout(() => { if (screen === 'select' && sel.ok[0] && sel.ok[1]) startFight(); }, 900);
@@ -388,6 +401,23 @@
     showCup();
   }
 
+  // escolha do lutador: no começo monta a chave; no meio do torneio só troca o do jogador
+  function cupPicked(id) {
+    if (!cup) return startCup(id);
+    cup.ids[0] = id;
+    showCup();
+  }
+
+  // trocar de lutador no meio do torneio (no chaveamento, na pausa ou no resultado)
+  function cupPick() {
+    if (!cup) return;
+    if (game && game.phase === 'over' && cup.result === 0) cupAdvance();   // a vitória já conta
+    if (cup.champion != null) return showCup();
+    game = null;
+    picks[0] = cup.ids[0];
+    openSelect();
+  }
+
   const cupMatch = () => cup.rounds[cup.r].find((m) => m.a === 0 || m.b === 0);
   // dificuldade sobe a cada rodada em torno da escolhida nas configurações: abaixo, igual, acima
   const cupLevel = () => LEVELS[Math.max(0, Math.min(LEVELS.length - 1, LEVELS.indexOf(settings.difficulty) + cup.r - 1))];
@@ -424,6 +454,7 @@
       ? `${CUP_ROUNDS[cup.r]}: você × ${nm(next.a === 0 ? next.b : next.a)} · CPU ${CK.BOT_LEVELS[cupLevel()].name} · aperte <kbd>F</kbd> / <kbd>K</kbd> para lutar`
       : `${esc(CK.CHARACTERS[cup.ids[0]].name)} venceu o torneio!`;
     $('#cup-fight').classList.toggle('hidden', !next);
+    $('#cup-pick').classList.toggle('hidden', !next);
     $('#cup-again').classList.toggle('hidden', !!next);
     $('#cup-quit').textContent = next ? 'Desistir' : 'Menu principal';
     game = null;
@@ -446,7 +477,7 @@
     $('#cup-next').textContent = w === 0 ? (last ? 'Ver o campeão' : 'Próxima rodada') : 'Tentar de novo';
     $('#result-hint').innerHTML = w === 0
       ? `Você passou ${CUP_PELA[cup.r]}! Aperte <kbd>F</kbd> / <kbd>K</kbd> ou clique em ${last ? 'Ver o campeão' : 'Próxima rodada'}.`
-      : `${w < 0 ? 'Empate: a luta precisa de um vencedor.' : 'Não desista!'} Aperte <kbd>F</kbd> / <kbd>K</kbd> para tentar de novo.`;
+      : `${w < 0 ? 'Empate: a luta precisa de um vencedor.' : 'Não desista!'} Aperte <kbd>F</kbd> / <kbd>K</kbd> para tentar de novo, ou troque de lutador.`;
   }
 
   function cupNext() {
@@ -456,13 +487,17 @@
       game.reset();
       return;
     }
-    const m = cupMatch();
-    setCupWinner(cup.r, cup.rounds[cup.r].indexOf(m), 0);
+    cupAdvance();
+    showCup();
+  }
+
+  function cupAdvance() {
+    setCupWinner(cup.r, cup.rounds[cup.r].indexOf(cupMatch()), 0);
+    cup.result = null;
     if (cup.champion == null) {
       cup.r++;
       resolveCpuMatches();
     }
-    showCup();
   }
 
   // teclado no chaveamento e no resultado; a revanche automática do modo vs CPU não vale aqui
@@ -490,6 +525,9 @@
         // energia do ataque forte; acende quando dá para disparar
         box.querySelector('.energy-fill').style.width = (f.energy / CK.ENERGY) * 100 + '%';
         box.classList.toggle('charged', f.energy >= (f.def.attacks.attack2.cost || 0));
+        // fôlego do golpe rápido e do dash; pisca quando não dá nem para um golpe
+        box.querySelector('.stamina-fill').style.width = (f.stamina / CK.STAMINA) * 100 + '%';
+        box.classList.toggle('tired', f.stamina < (f.def.attacks.attack1.stamina || 0));
       });
       $('#timer').textContent = g.settings.roundTime ? g.time : '∞';
     },

@@ -45,7 +45,7 @@ body { display: grid; place-items: center; }
 }
 .screen.dim { background: rgba(8, 2, 10, 0.55); box-shadow: 0 0 0 100vmax rgba(8, 2, 10, 0.55); }
 
-#screen-menu { position: fixed; background: linear-gradient(90deg, rgba(8,2,10,.2), rgba(8,2,10,.7) 35%, rgba(8,2,10,.7) 65%, rgba(8,2,10,.2)); }
+#screen-menu, #screen-play, #screen-vscpu { position: fixed; background: linear-gradient(90deg, rgba(8,2,10,.2), rgba(8,2,10,.7) 35%, rgba(8,2,10,.7) 65%, rgba(8,2,10,.2)); }
 #screen-controls, #screen-settings, #screen-loading { background: rgba(8, 2, 10, 0.72); box-shadow: 0 0 0 100vmax rgba(8, 2, 10, 0.72); }
 
 .loading { font: calc(var(--u) * 48) var(--display); letter-spacing: .05em; }
@@ -327,6 +327,22 @@ kbd {
 .p2 .energy-fill { left: 0; }
 .bar-box.charged .energy-fill { background: linear-gradient(180deg, #bff3ff, #3cc8ff 50%, #1a7ad8); }
 
+/* fôlego (stamina) do golpe rápido e do dash */
+.stamina {
+  position: relative;
+  height: calc(var(--u) * 8);
+  margin-top: calc(var(--u) * 4);
+  background: #2a2208;
+  border: calc(var(--u) * 3) solid var(--ink);
+  transform: skewX(-14deg);
+  overflow: hidden;
+}
+.stamina-fill { position: absolute; top: 0; bottom: 0; background: linear-gradient(180deg, #fff6b0, #ffcf3a 50%, #d89a00); }
+.p1 .stamina-fill { right: 0; }
+.p2 .stamina-fill { left: 0; }
+.bar-box.tired .stamina-fill { background: #8a6a2a; }
+.bar-box.tired .stamina { animation: pulse .3s infinite alternate; }
+
 .bar-name {
   margin-top: calc(var(--u) * 6);
   font: calc(var(--u) * 30) var(--display);
@@ -406,7 +422,7 @@ kbd {
 /* botões que só valem em um dos modos (classes no body: net, host, player, tourney; ver online.js) */
 body:not(.net) .net-only, body.net .local-only, body:not(.host) .host-only,
 body.net:not(.player) .player-only, body.tourney .no-tourney,
-body.cup .no-cup, body:not(.cup) .cup-only { display: none !important; }
+body.cup .no-cup, body:not(.cup) .cup-only, body:not(.tourney) .tourney-only { display: none !important; }
 
 button.small { font-size: calc(var(--u) * 24); min-width: calc(var(--u) * 200); padding: calc(var(--u) * 6) calc(var(--u) * 24); }
 button:disabled { filter: grayscale(.8) brightness(.7); cursor: default; transform: none; }

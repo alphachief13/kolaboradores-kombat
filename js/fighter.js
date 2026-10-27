@@ -30,7 +30,9 @@ CK.Fighter = class Fighter {
     this.atk = null;
     this.hasHit = false;
     this.stun = 0;
-    this.energy = CK.ENERGY;      // gasta nos ataques e recupera sozinha
+    this.energy = CK.ENERGY;      // gasta no ataque forte e recupera sozinha
+    this.stamina = CK.STAMINA;    // gasta no golpe rápido e no dash; volta mais rápido
+    this.tap = { dir: 0, t: -99 }; // último toque em uma direção (toque duplo = dash)
   }
 
   get onGround() { return this.y >= CK.GROUND - 0.5; }
@@ -41,10 +43,25 @@ CK.Fighter = class Fighter {
     this.t = 0;
   }
 
-  // o golpe rápido também gasta energia (stamina): sem ela, não dá para ficar só batendo
+  // o golpe rápido gasta fôlego (stamina): sem ele, não dá para ficar só batendo
   canStrike() {
-    return this.energy >= (this.def.attacks.attack1.cost || 0);
+    return this.stamina >= (this.def.attacks.attack1.stamina || 0);
   }
+
+  // dash: arrancada rápida para o lado (o que estiver apertado ou, sem direção, para trás)
+  canDash() {
+    return this.onGround && this.stamina >= CK.DASH_COST;
+  }
+
+  startDash(dir) {
+    this.stamina -= CK.DASH_COST;
+    this.dashDir = dir || -this.facing;
+    this.setState('dash');
+    this.game.emit('fx', 'dust', this.x, CK.GROUND, 6);
+    this.game.emit('sfx', 'dash', this.charId);
+  }
+
+  get dodging() { return this.state === 'dash' && this.t < CK.DASH_IFRAMES; }
 
   // só um disparo do especial por vez na arena, e só com energia suficiente
   canShoot(game) {
@@ -60,6 +77,7 @@ CK.Fighter = class Fighter {
     this.nextHit = 0;
     this.setState(name);
     this.energy -= this.atk.cost || 0;
+    this.stamina -= this.atk.stamina || 0;
     if (this.onGround) this.vx = 0;
     this.game.emit('sfx', name === 'attack1' ? 'a1' : 'a2', this.charId);
   }
@@ -74,7 +92,15 @@ CK.Fighter = class Fighter {
     this.clock++;
     if (this.flash > 0) this.flash--;
     for (const k in this.status) if (this.status[k] > 0) this.status[k]--;
-    if (canAct && this.state !== 'attack1' && this.state !== 'attack2') this.energy = Math.min(CK.ENERGY, this.energy + CK.ENERGY_REGEN);
+    if (canAct && this.state !== 'attack2') this.energy = Math.min(CK.ENERGY, this.energy + CK.ENERGY_REGEN);
+    if (canAct && this.state !== 'attack1' && this.state !== 'dash') this.stamina = Math.min(CK.STAMINA, this.stamina + CK.STAMINA_REGEN);
+    // toque duplo na mesma direção em até 12 ticks também dá o dash
+    let dash = canAct && inp.dashP;
+    const tapDir = inp.leftP ? -1 : inp.rightP ? 1 : 0;
+    if (canAct && tapDir) {
+      if (tapDir === this.tap.dir && this.clock - this.tap.t <= 12) { dash = true; this.tap.dir = 0; }
+      else this.tap = { dir: tapDir, t: this.clock };
+    }
     if (this.trailHp > this.hp) this.trailHp = Math.max(this.hp, this.trailHp - 0.35);
 
     switch (this.state) {
@@ -82,6 +108,7 @@ CK.Fighter = class Fighter {
       case 'walk':
         if (canAct && inp.a1P && this.canStrike()) this.startAttack('attack1');
         else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
+        else if (dash && this.canDash()) this.startDash(dir);
         else if (canAct && inp.block) { this.setState('block'); this.stun = 0; this.vx = 0; }
         else if (canAct && (inp.up || inp.upP)) { this.setState('prejump'); this.vx = 0; }
         else if (canAct && dir) {
@@ -104,6 +131,14 @@ CK.Fighter = class Fighter {
         if (canAct && inp.a1P && this.canStrike()) this.startAttack('attack1');
         else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
         break;
+      case 'dash': {
+        // arranca forte e vai freando; no fim fica parado um instante (recuperação)
+        const k = 1 - this.t / (CK.DASH_TICKS - 4);
+        this.vx = k > 0 ? this.dashDir * CK.DASH_SPEED * k * slow : 0;
+        if (this.t % 3 === 0 && k > 0) this.game.emit('fx', 'trail', this.x - this.dashDir * 40, this.y - 120);
+        if (this.t >= CK.DASH_TICKS) this.setState('idle');
+        break;
+      }
       case 'land':
         this.vx = 0;
         if (this.t >= 6) this.setState('idle');
@@ -118,6 +153,7 @@ CK.Fighter = class Fighter {
         if (this.t < this.stun) break;
         if (canAct && inp.a1P && this.canStrike()) this.startAttack('attack1');
         else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
+        else if (dash && this.canDash()) this.startDash(dir);
         else if (!canAct || !inp.block) this.setState('idle');
         break;
       case 'hit':
@@ -250,7 +286,7 @@ CK.Fighter = class Fighter {
   }
 
   hurtbox() {
-    if (this.state === 'ko') return null;
+    if (this.state === 'ko' || this.dodging) return null;
     return { x: this.x - CK.HURT_W / 2, y: this.y - CK.HURT_H, w: CK.HURT_W, h: CK.HURT_H };
   }
 
@@ -262,9 +298,11 @@ CK.Fighter = class Fighter {
         this.set('idle', seq[Math.floor(this.clock / 12) % seq.length]);
         break;
       }
-      case 'walk': {
-        const k = Math.floor(this.clock / 6) % 6;
-        this.set('walk', Math.sign(this.vx) === this.facing ? k : 5 - k);
+      case 'walk':
+      case 'dash': {
+        // no dash as pernas giram três vezes mais rápido
+        const k = Math.floor(this.clock / (this.state === 'dash' ? 2 : 6)) % 6;
+        this.set('walk', Math.sign(this.vx || this.dashDir) === this.facing ? k : 5 - k);
         break;
       }
       case 'prejump': this.set('jump', 0); break;
@@ -317,6 +355,7 @@ CK.Fighter = class Fighter {
     else if (invert > 0) ctx.filter = `hue-rotate(${(this.clock * 23) % 360}deg) saturate(1.6)`;
     else if (slow > 0) ctx.filter = 'sepia(0.55) brightness(1.15)';
     if (this.armored) ctx.filter = 'brightness(1.3) drop-shadow(0 0 12px #fff)';
+    if (this.dodging) ctx.globalAlpha = 0.55;   // invencível no começo do dash
     ctx.drawImage(img, -fr.ax, -fr.ay, fr.w, fr.h);
     ctx.restore();
 
@@ -387,7 +426,7 @@ CK.Fighter.prototype.drawShield = function (ctx) {
 };
 
 CK.Fighter.NET_KEYS = ['x', 'y', 'vx', 'vy', 'facing', 'hp', 'trailHp', 'state', 't', 'clock',
-  'anim', 'frame', 'flash', 'hasHit', 'hits', 'nextHit', 'stun', 'energy'];
+  'anim', 'frame', 'flash', 'hasHit', 'hits', 'nextHit', 'stun', 'energy', 'stamina', 'dashDir'];
 
 function overlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;

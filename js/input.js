@@ -1,12 +1,12 @@
 // Teclado + Gamepad API. Cada jogador vira um estado simples por tick:
-// { left, right, up, a1, a2, block } (segurando) e { upP, a1P, a2P, blockP, leftP, rightP } (apertou agora).
+// { left, right, up, a1, a2, block, dash } (segurando) e { upP, a1P, a2P, blockP, dashP, leftP, rightP } (apertou agora).
 // O mouse é do jogador 1: botão esquerdo = ataque rápido, botão direito = ataque forte (à distância).
 CK.Input = (() => {
   const KEYS = [
-    { left: ['KeyA'], right: ['KeyD'], up: ['KeyW'], a1: ['KeyF'], a2: ['KeyG'], block: ['KeyS', 'KeyH'] },
-    { left: ['ArrowLeft'], right: ['ArrowRight'], up: ['ArrowUp'], a1: ['KeyK', 'Numpad1'], a2: ['KeyL', 'Numpad2'], block: ['ArrowDown', 'Numpad3'] },
+    { left: ['KeyA'], right: ['KeyD'], up: ['KeyW'], a1: ['KeyF'], a2: ['KeyG'], block: ['KeyS', 'KeyH'], dash: ['KeyE'] },
+    { left: ['ArrowLeft'], right: ['ArrowRight'], up: ['ArrowUp'], a1: ['KeyK', 'Numpad1'], a2: ['KeyL', 'Numpad2'], block: ['ArrowDown', 'Numpad3'], dash: ['KeyJ', 'Numpad0'] },
   ];
-  const ACTIONS = ['left', 'right', 'up', 'a1', 'a2', 'block'];
+  const ACTIONS = ['left', 'right', 'up', 'a1', 'a2', 'block', 'dash'];
   const PREVENT = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space']);
 
   const held = new Set();
@@ -45,6 +45,7 @@ CK.Input = (() => {
       a1: b(2),
       a2: b(3) || b(1),
       block: b(4) || b(5) || b(13) || (p.axes[1] || 0) > 0.6,   // LB, RB ou baixo
+      dash: b(6) || b(7),                                         // LT ou RT
     };
   }
 
