@@ -291,8 +291,6 @@ CK.Online = (() => {
         const r = S.remote.get(id) || { held: 0, pressed: 0 };
         r.held = m.b & ~PRESS;
         r.pressed |= m.b & PRESS;
-        // clique do mouse: ponto mirado para o ataque forte
-        if (Array.isArray(m.aim) && m.aim.length === 2 && m.aim.every(Number.isFinite)) r.aim = m.aim;
         S.remote.set(id, r);
         break;
       }
@@ -525,9 +523,7 @@ CK.Online = (() => {
         const r = S.remote.get(id);
         if (!r) return NONE;
         const s = decode(r.held | r.pressed);
-        s.aim = r.aim || null;
         r.pressed = 0;
-        r.aim = null;
         return s;
       });
       if (S.match.tourney && g.phase === 'over') inp = [NONE, NONE];
@@ -599,8 +595,7 @@ CK.Online = (() => {
     if (mySlot() >= 0) {
       const inp = CK.Input.merge(inputs[0], inputs[1]);
       const b = encode(inp);
-      if (inp.aim) S.link.send({ t: 'in', b, aim: inp.aim });
-      else if (b !== S.lastIn || b & PRESS) S.link.send({ t: 'in', b });
+      if (b !== S.lastIn || b & PRESS) S.link.send({ t: 'in', b });
       S.lastIn = b;
     }
     // um estado por tick, com folga de 2 para absorver a variação da rede; atrasado demais, pula para o último

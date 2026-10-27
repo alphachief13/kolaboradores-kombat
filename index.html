@@ -57,6 +57,7 @@
       <h1 class="logo"><span>Kolaboradores</span><span>Kombat</span></h1>
       <nav class="menu">
         <button data-action="play-cpu">1 Jogador · vs CPU</button>
+        <button data-action="play-cup">Torneio vs CPU</button>
         <button data-action="play-pvp">2 Jogadores</button>
         <button data-action="play-net">Jogar em rede</button>
         <button data-action="controls">Controles</button>
@@ -161,6 +162,18 @@
       </div>
     </section>
 
+    <!-- Torneio contra a CPU: chaveamento entre as lutas -->
+    <section id="screen-cup" class="screen hidden">
+      <h2 class="mk-title" id="cup-title">Torneio</h2>
+      <div id="cup-bracket"></div>
+      <p class="hint" id="cup-hint"></p>
+      <div class="rematch">
+        <button data-action="cup-fight" id="cup-fight">Lutar!</button>
+        <button data-action="play-cup" id="cup-again">Novo torneio</button>
+        <button class="small" data-action="menu" id="cup-quit">Desistir</button>
+      </div>
+    </section>
+
     <!-- Seleção de personagem -->
     <section id="screen-select" class="screen hidden">
       <h2 class="mk-title">Escolha seu lutador</h2>
@@ -194,12 +207,13 @@
       <div class="panel">
         <h2 id="result-title"></h2>
         <p class="hint" id="result-hint">Revanche? Cada jogador aperta seu ataque rápido (<kbd>F</kbd> / <kbd>K</kbd>) ou clica.</p>
-        <div class="rematch no-tourney">
+        <div class="rematch no-tourney no-cup">
           <button class="p1" data-action="rematch-p1">J1: aceitar</button>
           <button class="p2" data-action="rematch-p2">J2: aceitar</button>
         </div>
         <div class="rematch">
-          <button data-action="select" class="no-tourney player-only">Trocar personagens</button>
+          <button data-action="cup-next" class="cup-only" id="cup-next">Continuar</button>
+          <button data-action="select" class="no-tourney no-cup player-only">Trocar personagens</button>
           <button data-action="menu" class="local-only">Menu principal</button>
           <button data-action="net-lobby" class="net-only host-only">Voltar à sala</button>
           <button data-action="net-leave" class="net-only small">Sair da sala</button>

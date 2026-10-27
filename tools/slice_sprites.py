@@ -90,6 +90,15 @@ SHEETS = {
         "hit":     ("Raposa de boné reagindo ao golpe-6.png", 3, 1),
         "ko":      ("Queda cômica do bandicoot de boné-7.png", 6, 2),
     },
+    "cristorey": {
+        "idle":    ("Spritesheet de lutador musculoso em guarda-1.png", 6, 2),
+        "walk":    ("Seis quadros da caminhada do fisiculturista-2.png", 6, 2),
+        "jump":    ("Salto do fisiculturista em quatro poses-3.png", 4, 2),
+        "attack1": ("Spritesheet de soco explosivo em quatro quadros-4.png", 4, 2),
+        "attack2": ("Spritesheet de ataque com bomba cartunesca-5.png", 5, 1),
+        "hit":     ("Três reações do lutador ao impacto-6.png", 3, 1),
+        "ko":      ("Queda cômica do lutador de óculos-7.png", 6, 2),
+    },
 }
 
 
@@ -336,6 +345,10 @@ def main():
             fx = [f for f in FX if f["char"] == char and f["anim"] == anim]
             frames = split_sheet(os.path.join(SRC, fname), count, rows, MANUAL.get(char, {}).get(anim),
                                  [b for f in fx for b in f.get("erase", [f["box"]])])
+            for i in FLIP.get(char, {}).get(anim, ()):
+                fr = frames[i]
+                fr["img"] = fr["img"][:, ::-1].copy()
+                fr["ax"] = fr["img"].shape[1] - fr["ax"]
             scale = TARGET_H / STAND_H[char].get(anim, STAND_H[char]["idle"])
             for f in fx:
                 export_fx(f, fname, frames[f["frame"]], scale, meta)
@@ -452,6 +465,12 @@ MANUAL = {
             [(1210, 0, 1640, 300), (1320, 300, 1640, 793), (1240, 450, 1320, 793)], [(1640, 0, 1983, 793)],
         ],
     },
+    "cristorey": {
+        "attack2": [
+            [(0, 0, 375, 793)], [(375, 0, 750, 793)], [(750, 0, 1340, 255), (750, 255, 1130, 793)],
+            [(1340, 0, 1690, 255), (1130, 255, 1660, 793)], [(1660, 0, 1983, 793)],
+        ],
+    },
 }
 
 # quadros cujo corte à direita atravessa um brilho: esmaece as últimas n colunas (px da folha);
@@ -459,6 +478,11 @@ MANUAL = {
 FEATHER = {
     "soldado": {"attack2": {3: -70}},
     "pastor": {"attack2": {2: 90, 3: 15}},
+}
+
+# quadros desenhados virados para a esquerda: espelha para ficarem de frente para a direita
+FLIP = {
+    "cristorey": {"hit": [0, 1]},
 }
 
 # objetos recortados da folha (e apagados do quadro) para virarem projéteis;
@@ -484,6 +508,10 @@ FX = [
      "box": (1195, 350, 1320, 440), "angle": 0,
      # o boné também aparece lá no alto no quadro seguinte: apaga a explosão azul
      "erase": [(1195, 350, 1320, 440), (1280, 110, 1640, 335)]},
+    {"name": "bomb", "char": "cristorey", "anim": "attack2", "frame": 2,
+     "box": (1200, 115, 1330, 192), "angle": 0,
+     # some também o rastro de fogo e a explosão perto da mão (a bomba estoura onde cai)
+     "erase": [(1085, 110, 1335, 205), (1475, 155, 1690, 300), (1598, 300, 1690, 350)]},
 ]
 
 # altura aproximada (px na folha original) do personagem em pé em cada folha,
@@ -497,6 +525,7 @@ STAND_H = {
     "petista": {"idle": 492, "walk": 492, "jump": 490, "attack1": 490, "attack2": 435, "hit": 565, "ko": 492},
     "pastor": {"idle": 465, "walk": 465, "jump": 520, "attack1": 556, "attack2": 435, "hit": 630, "ko": 470},
     "bandicoot": {"idle": 450, "walk": 476, "jump": 515, "attack1": 512, "attack2": 395, "hit": 660, "ko": 465},
+    "cristorey": {"idle": 486, "walk": 492, "jump": 540, "attack1": 620, "attack2": 520, "hit": 700, "ko": 560},
 }
 
 if __name__ == "__main__":

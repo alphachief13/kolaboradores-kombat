@@ -11,7 +11,6 @@ window.CK = {
   WALK: 340,
   BACK: 260,
   AIR: 330,
-  WRAP_VIS: 200,      // perto da borda o lutador também é desenhado do outro lado
   PUSH_DIST: 115,     // distância mínima entre os dois lutadores
   MAX_HP: 100,
   ENERGY: 100,        // energia do ataque forte (cada disparo gasta "cost")
@@ -52,7 +51,7 @@ CK.CHARACTERS = {
         heavy: true,
         cost: 55,
         projectile: {
-          at: 34, fx: 'rocket', speed: 400, accel: 2600, maxSpeed: 1500, height: -175,
+          at: 34, fx: 'rocket', speed: 400, accel: 2600, maxSpeed: 1500, height: -125,
           dmg: 15, stun: 28, kb: 480,
         },
       },
@@ -87,8 +86,8 @@ CK.CHARACTERS = {
         heavy: true,
         cost: 40,
         projectile: {
-          at: 22, fx: 'capwave', kind: 'boomerang', speed: 950, decel: 700, height: -150,
-          size: [130, 90], spin: 10, style: 'energy', dmg: 11, stun: 24, kb: 380,
+          at: 22, fx: 'capwave', kind: 'boomerang', speed: 950, decel: 700, height: -95,
+          size: [90, 60], scale: 0.6, spin: 10, hitSpeed: 300, style: 'energy', dmg: 11, stun: 24, kb: 380,
         },
       },
     },
@@ -116,15 +115,15 @@ CK.CHARACTERS = {
       },
       attack2: {
         name: 'Chuva de Cubinhos',
-        desc: 'Desmonta o cubo e dispara três peças em alturas diferentes. Difícil desviar de todas!',
+        desc: 'Desmonta o cubo e dispara três peças em sequência, em alturas diferentes. Só um pulo bem cronometrado passa por todas!',
         preview: 2,
         ticks: [10, 12, 14, 14, 12],
         heavy: true,
         cost: 50,
         projectile: {
-          at: 22, fx: 'cubewave', speed: 820, height: -170, size: [70, 70], scale: 1.2,
+          at: 22, fx: 'cubewave', speed: 820, height: -70, size: [50, 50], scale: 0.8,
           style: 'energy', dmg: 5, stun: 16, kb: 180,
-          shots: [{ at: 22, height: -170 }, { at: 32, height: -230 }, { at: 42, height: -105 }],
+          shots: [{ at: 22, height: -70 }, { at: 28, height: -120 }, { at: 34, height: -70 }],
         },
       },
     },
@@ -158,8 +157,8 @@ CK.CHARACTERS = {
         heavy: true,
         cost: 40,
         projectile: {
-          at: 32, fx: 'ball', kind: 'bounce', speed: 700, vy: -500, grav: 2400, bounce: 0.78,
-          height: -150, size: [60, 60], spin: 14, style: 'energy', dmg: 12, stun: 26, kb: 450,
+          at: 32, fx: 'ball', kind: 'bounce', speed: 700, vy: 300, grav: 2400, bounce: 0.68,
+          height: -150, size: [50, 50], spin: 14, style: 'energy', dmg: 12, stun: 26, kb: 450,
         },
       },
     },
@@ -174,7 +173,7 @@ CK.CHARACTERS = {
     taunt: [2, 3, 5, 3],
     role: 'Tanque',
     // a mais vida e a mais pesada; lenta e de pulo baixo, avança de cabeça sem ser interrompida
-    stats: { hp: 105, walk: 270, back: 210, air: 260, jump: 1000, weight: 0.8 },
+    stats: { hp: 105, walk: 270, back: 210, air: 260, jump: 1050, weight: 0.8 },
     attacks: {
       attack1: {
         name: 'Cabeçada de Cordeira',
@@ -231,8 +230,8 @@ CK.CHARACTERS = {
         heavy: true,
         cost: 35,
         projectile: {
-          at: 24, fx: 'soundwave', kind: 'wave', speed: 950, range: 560, grow: 1.8,
-          height: -190, size: [90, 130], scale: 1.4, style: 'energy', dmg: 10, stun: 22, kb: 700,
+          at: 24, fx: 'soundwave', kind: 'wave', speed: 950, range: 560, grow: 1.4,
+          height: -95, size: [60, 70], scale: 0.85, style: 'energy', dmg: 10, stun: 22, kb: 700,
         },
       },
     },
@@ -266,7 +265,7 @@ CK.CHARACTERS = {
         heavy: true,
         cost: 50,
         projectile: {
-          at: 38, fx: 'holywave', speed: 480, height: -165, size: [70, 120], scale: 0.65,
+          at: 38, fx: 'holywave', speed: 480, height: -100, size: [50, 80], scale: 0.4,
           style: 'energy', dmg: 10, stun: 26, kb: 400, heal: 6,
         },
       },
@@ -302,8 +301,43 @@ CK.CHARACTERS = {
         heavy: true,
         cost: 35,
         projectile: {
-          at: 22, fx: 'capcomet', kind: 'bounce', speed: 640, vy: -1050, grav: 2500, bounces: 0,
-          height: -180, size: [80, 80], spin: 12, style: 'energy', dmg: 13, stun: 26, kb: 420,
+          at: 22, fx: 'capcomet', kind: 'bounce', speed: 600, vy: -1150, grav: 2500, bounces: 0,
+          height: -180, size: [60, 50], scale: 0.8, spin: 12, style: 'energy', dmg: 13, stun: 26, kb: 420,
+        },
+      },
+    },
+  },
+  cristorey: {
+    name: 'Viva Cristo Rey',
+    theme: 'Fisiculturista',
+    desc: 'Óculos, cachos e bíceps do tamanho de bombas — que, aliás, ele também carrega. Cada soco explode.',
+    color: '#7b2fd6',
+    spark: '#ffb02e',
+    idle: [0, 1, 2, 1],
+    taunt: [3, 4, 5, 4],
+    role: 'Brutamontes',
+    // muito vida e quase não é empurrado, mas é lento no chão e no ar; a bomba estoura em área
+    stats: { hp: 115, walk: 295, back: 225, air: 285, jump: 1080, weight: 0.7 },
+    attacks: {
+      attack1: {
+        name: 'Soco Explosivo',
+        desc: 'Um direto de fisiculturista que estoura no impacto. Lento para sair, mas derruba.',
+        preview: 2,
+        ticks: [8, 6, 9, 10],
+        active: [14, 23],
+        box: [30, -250, 220, 130],
+        dmg: 12, stun: 22, kb: 460,
+      },
+      attack2: {
+        name: 'Bomba Cartunesca',
+        desc: 'Arremessa uma bomba em arco que quica uma vez e explode, acertando quem estiver por perto.',
+        preview: 1,
+        ticks: [12, 14, 10, 14, 12],
+        heavy: true,
+        cost: 45,
+        projectile: {
+          at: 26, fx: 'bomb', kind: 'bounce', speed: 560, vy: -820, grav: 2400, bounce: 0.45, bounces: 1,
+          height: -180, size: [55, 55], spin: 6, blast: 80, dmg: 14, stun: 28, kb: 520,
         },
       },
     },

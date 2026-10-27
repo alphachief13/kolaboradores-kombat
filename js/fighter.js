@@ -28,7 +28,6 @@ CK.Fighter = class Fighter {
     this.frame = 0;
     this.flash = 0;
     this.atk = null;
-    this.aim = null;              // ponto mirado com o mouse no ataque forte (null = reto à frente)
     this.hasHit = false;
     this.stun = 0;
     this.energy = CK.ENERGY;      // gasta no ataque forte e recupera sozinha
@@ -49,10 +48,8 @@ CK.Fighter = class Fighter {
     return !a.projectile || !game.projectiles.some((p) => p.owner === this);
   }
 
-  startAttack(name, aim) {
+  startAttack(name) {
     this.atk = this.def.attacks[name];
-    this.aim = name === 'attack2' && aim ? aim : null;
-    if (this.aim && Math.abs(aim[0] - this.x) > 1) this.facing = Math.sign(aim[0] - this.x);   // vira para a mira
     this.hasHit = false;
     this.hits = 0;
     this.nextHit = 0;
@@ -79,7 +76,7 @@ CK.Fighter = class Fighter {
       case 'idle':
       case 'walk':
         if (canAct && inp.a1P) this.startAttack('attack1');
-        else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2', inp.aim);
+        else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
         else if (canAct && inp.block) { this.setState('block'); this.stun = 0; this.vx = 0; }
         else if (canAct && (inp.up || inp.upP)) { this.setState('prejump'); this.vx = 0; }
         else if (canAct && dir) {
@@ -100,7 +97,7 @@ CK.Fighter = class Fighter {
         break;
       case 'air':
         if (canAct && inp.a1P) this.startAttack('attack1');
-        else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2', inp.aim);
+        else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
         break;
       case 'land':
         this.vx = 0;
@@ -115,7 +112,7 @@ CK.Fighter = class Fighter {
         this.vx *= 0.85;
         if (this.t < this.stun) break;
         if (canAct && inp.a1P) this.startAttack('attack1');
-        else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2', inp.aim);
+        else if (canAct && inp.a2P && this.canShoot(game)) this.startAttack('attack2');
         else if (!canAct || !inp.block) this.setState('idle');
         break;
       case 'hit':
@@ -182,9 +179,7 @@ CK.Fighter = class Fighter {
     if (p) {
       for (const s of p.shots || [p]) {
         if (this.t !== s.at) continue;
-        // com mira, cada peça da rajada mantém a diferença de altura em relação ao ponto mirado
-        const aim = this.aim && [this.aim[0], this.aim[1] + (s.height ?? p.height ?? 0) - (p.height ?? 0)];
-        game.spawnProjectile(this, s === p ? p : { ...p, ...s }, aim);
+        game.spawnProjectile(this, s === p ? p : { ...p, ...s });
       }
     }
     const total = a.ticks.reduce((s, n) => s + n, 0);
@@ -254,14 +249,6 @@ CK.Fighter = class Fighter {
     return { x: this.x - CK.HURT_W / 2, y: this.y - CK.HURT_H, w: CK.HURT_W, h: CK.HURT_H };
   }
 
-  // deslocamentos em que o lutador aparece: perto da borda ele também surge do outro lado
-  copies() {
-    const out = [0];
-    if (this.x < CK.WRAP_VIS) out.push(CK.W);
-    if (this.x > CK.W - CK.WRAP_VIS) out.push(-CK.W);
-    return out;
-  }
-
   updateAnim() {
     const t = this.t;
     switch (this.state) {
@@ -303,15 +290,6 @@ CK.Fighter = class Fighter {
   }
 
   draw(ctx, showBoxes) {
-    for (const dx of this.copies()) {
-      ctx.save();
-      ctx.translate(dx, 0);
-      this.drawAt(ctx, showBoxes);
-      ctx.restore();
-    }
-  }
-
-  drawAt(ctx, showBoxes) {
     const fr = this.frames[this.anim][this.frame];
     const img = CK.images[fr.src];
     const s = CK.SCALE;

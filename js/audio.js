@@ -553,6 +553,32 @@ CK.Sfx = (() => {
       koVoice: () => voice({ f: 420, f2: 160, dur: 1.2, vowel: 'o', vol: 0.16, vib: [7, 120] }),  // "uóóóóó"
       jump: () => { osc({ f: 200, f2: 700, dur: 0.16, vol: 0.18, vib: [28, 70] }); whoosh({ f: 600, f2: 3000, dur: 0.14, vol: 0.14 }); },
     },
+    // fisiculturista: grunhido de academia, soco que explode e bomba de pavio chiando
+    cristorey: {
+      a1: () => {
+        whoosh({ f: 200, f2: 1600, dur: 0.26, vol: 0.34 });
+        voice({ f: 120, f2: 95, dur: 0.22, vowel: 'a', vol: 0.16 });            // "rrah!"
+      },
+      a1Hit: () => {
+        kick({ f: 130, f2: 30, dur: 0.4, vol: 1 });
+        noise({ type: 'lowpass', f: 2500, f2: 200, dur: 0.35, vol: 0.5, dist: 2 });
+      },
+      // pavio aceso
+      a2: () => noise({ type: 'highpass', f: 4000, dur: 0.7, vol: 0.12, trem: [30, 0.7] }),
+      shot: () => {
+        whoosh({ f: 250, f2: 1800, dur: 0.3, vol: 0.28 });
+        noise({ type: 'highpass', f: 5000, dur: 0.9, vol: 0.08, trem: [35, 0.7], at: 0.1 });
+      },
+      // explosão grande, com estalos
+      shotHit: () => {
+        kick({ f: 80, f2: 22, dur: 0.8, vol: 1 });
+        noise({ type: 'lowpass', f: 3500, f2: 100, dur: 1, vol: 0.7, dist: 3, wet: 0.4 });
+        for (let i = 0; i < 8; i++) noise({ type: 'highpass', f: 2500, dur: 0.04, vol: 0.2, at: rnd(0.05, 0.4) });
+      },
+      hurt: () => voice({ f: 140, f2: 105, dur: 0.2, vowel: 'u', vol: 0.18 }),
+      koVoice: () => voice({ f: 150, f2: 60, dur: 1.2, vowel: 'o', vol: 0.2, vib: [5, 20] }),
+      jump: () => { whoosh({ f: 300, f2: 1600, dur: 0.18, vol: 0.2 }); voice({ f: 130, dur: 0.1, vowel: 'u', vol: 0.12 }); },
+    },
   };
 
   return {

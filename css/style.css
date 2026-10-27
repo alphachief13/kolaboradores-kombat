@@ -30,8 +30,6 @@ body { display: grid; place-items: center; }
 
 /* o canvas cobre a janela inteira; a área de jogo 1280x720 fica centralizada (ver CK.view) */
 #canvas { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; }
-/* na luta o mouse vira a mira (desenhada no canvas, ver drawAim em main.js) */
-body.aiming, body.aiming * { cursor: none !important; }
 
 .hidden { display: none !important; }
 
@@ -184,6 +182,8 @@ kbd {
 #cards { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--u) * 14); max-width: calc(var(--u) * 560); }
 #cards.cols4 { max-width: calc(var(--u) * 642); }
 #cards.cols4 .card, #cards.cols4 .emblem { width: calc(var(--u) * 150); }
+#cards.cols5 { max-width: calc(var(--u) * 646); }
+#cards.cols5 .card, #cards.cols5 .emblem { width: calc(var(--u) * 118); }
 
 .card, .emblem {
   position: relative;
@@ -397,17 +397,21 @@ kbd {
 .rematch button.p2 { background: linear-gradient(180deg, #ffb0b8, var(--p2)); }
 .rematch button.ok { filter: saturate(.4) brightness(1.3); }
 
+/* torneio contra a CPU: só o jogador escolhe, os adversários são sorteados */
+#screen-select.solo #side-p2 > *, #screen-select.solo #st-p2, #screen-select.solo #cards .tag.p2 { visibility: hidden; }
+
 #screen-select .hint, #screen-select .select-status { color: #fff; text-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 3) #000, 0 0 calc(var(--u) * 6) #000; }
 
 /* ---------- modo em rede ---------- */
 /* botões que só valem em um dos modos (classes no body: net, host, player, tourney; ver online.js) */
 body:not(.net) .net-only, body.net .local-only, body:not(.host) .host-only,
-body.net:not(.player) .player-only, body.tourney .no-tourney { display: none !important; }
+body.net:not(.player) .player-only, body.tourney .no-tourney,
+body.cup .no-cup, body:not(.cup) .cup-only { display: none !important; }
 
 button.small { font-size: calc(var(--u) * 24); min-width: calc(var(--u) * 200); padding: calc(var(--u) * 6) calc(var(--u) * 24); }
 button:disabled { filter: grayscale(.8) brightness(.7); cursor: default; transform: none; }
 
-#screen-net, #screen-lobby, #screen-bracket { background: rgba(8, 2, 10, 0.72); box-shadow: 0 0 0 100vmax rgba(8, 2, 10, 0.72); }
+#screen-net, #screen-lobby, #screen-bracket, #screen-cup { background: rgba(8, 2, 10, 0.72); box-shadow: 0 0 0 100vmax rgba(8, 2, 10, 0.72); }
 
 .net-panel .row input { width: calc(var(--u) * 240); font-size: calc(var(--u) * 22); padding: calc(var(--u) * 4) calc(var(--u) * 8); }
 .net-choices { display: flex; gap: calc(var(--u) * 24); }
@@ -529,7 +533,7 @@ button:disabled { filter: grayscale(.8) brightness(.7); cursor: default; transfo
 }
 
 /* chaveamento do torneio: uma coluna por rodada */
-#bracket { display: flex; align-items: stretch; gap: calc(var(--u) * 28); }
+#bracket, #cup-bracket { display: flex; align-items: stretch; gap: calc(var(--u) * 28); }
 .bk-round { display: flex; flex-direction: column; gap: calc(var(--u) * 10); min-width: calc(var(--u) * 190); }
 .bk-list { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: calc(var(--u) * 12); }
 .bk-round h4 { margin: 0; text-align: center; font: calc(var(--u) * 24) var(--display); letter-spacing: .08em; color: #d8c6d8; }
@@ -544,6 +548,8 @@ button:disabled { filter: grayscale(.8) brightness(.7); cursor: default; transfo
 .bk-p + .bk-p { border-top: 1px solid #6a4a70; }
 .bk-p.win { color: var(--gold); font-weight: 700; }
 .bk-p.lose { color: #777; text-decoration: line-through; }
+.bk-p.me { color: var(--p1); }
+.bk-p.me.win { color: var(--gold); }
 .bk-p i { color: #888; font-size: .85em; }
 .bk-match .wo { position: absolute; right: calc(var(--u) * -8); top: calc(var(--u) * -10); font-size: calc(var(--u) * 12); background: #ff3b4f; padding: 0 calc(var(--u) * 5); font-weight: 700; }
 .bk-round.champ .bk-p { font: calc(var(--u) * 28) var(--display); letter-spacing: .04em; }

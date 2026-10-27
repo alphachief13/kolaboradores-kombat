@@ -23,11 +23,12 @@ quando acende, dá para disparar de novo.
 
 **Sem paredes**: quem passa da borda da arena reaparece do outro lado.
 
-**Mira no mouse**: durante a luta o mouse vira uma mira do jogador 1 (em rede, de quem está em cada computador).
-O clique lança o ataque forte (o projétil) na direção mirada: para cima, para baixo, no chão ou para trás.
-Pela tecla do ataque forte o projétil sai reto, como antes.
+**Mouse**: durante a luta o mouse também controla o jogador 1 (em rede, quem está em cada computador):
+botão esquerdo dá o ataque rápido e botão direito o ataque forte, à distância.
 
-Modos: **1 Jogador · vs CPU** (o jogador 2 é controlado pelo computador; dificuldade Fácil, Normal ou Difícil em Configurações; o jogador pode usar as teclas de qualquer um dos dois lados) e **2 Jogadores** (local).
+Modos: **1 Jogador · vs CPU** (o jogador 2 é controlado pelo computador; dificuldade Fácil, Normal ou Difícil em Configurações; o jogador pode usar as teclas de qualquer um dos dois lados) **Torneio vs CPU** (mata-mata de 8 contra lutadores sorteados: quartas, semifinal e final;
+a CPU fica mais forte a cada rodada, começando um nível abaixo da dificuldade escolhida; quem perde tenta a mesma luta de novo)
+e **2 Jogadores** (local).
 
 Fluxo: menu → seleção de personagem (cada jogador escolhe e confirma) → contagem 3, 2, 1, FIGHT! → luta → K.O. → revanche quando os dois aceitam.
 
@@ -69,6 +70,7 @@ Depois de cada push, o jogo fica em `https://alphachief13.github.io/kolaboradore
 - **Petista** (militante): livraço vermelho (rápido) e grito de megafone (onda sonora que cruza a arena; dá para pular por cima).
 - **Pastor** (pregador): golpe da palavra (rápido) e onda de luz (onda dourada que cruza a arena; dá para pular por cima).
 - **Cordeiro Bandicoot** (acrobata): boné giratório (rápido) e boné cometa (boné lançado em arco que estoura onde cai; fuja para o lado).
+- **Viva Cristo Rey** (fisiculturista): soco explosivo (rápido, mas lento para sair) e bomba cartunesca (arremessada em arco, quica uma vez e explode em área; pule alto ou fuja para longe).
 
 ## Estrutura
 

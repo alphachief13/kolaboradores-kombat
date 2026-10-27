@@ -31,11 +31,12 @@
   let game = null;          // partida em andamento
   let demo = null;          // lutadores parados atrás do menu
   let picks = ['soldado', 'bonezinho'];
-  let mode = 'pvp';         // 'cpu': jogador 2 é o computador · 'net': partida em rede (ver online.js)
+  let mode = 'pvp';         // 'cpu': jogador 2 é o computador · 'cup': torneio contra a CPU · 'net': partida em rede (ver online.js)
   const SELECT_HINT = {
     pvp: $('#select-hint').innerHTML,
     net: 'Escolha com <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd>, confirme com <kbd>F</kbd>/<kbd>K</kbd>, desfaça com <kbd>G</kbd>/<kbd>L</kbd> · ou clique no retrato',
     watch: 'Assistindo: os jogadores estão escolhendo seus lutadores.',
+    cup: 'Escolha seu lutador para o torneio: <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>F</kbd>/<kbd>K</kbd> confirma · <kbd>Esc</kbd> volta · ou clique no retrato',
     cpu: 'Escolha seu lutador e depois o da CPU: <kbd>A</kbd>/<kbd>D</kbd> ou <kbd>←</kbd>/<kbd>→</kbd> escolhe, <kbd>F</kbd>/<kbd>K</kbd> confirma, <kbd>G</kbd>/<kbd>L</kbd> desfaz · <kbd>Esc</kbd> volta · ou clique no retrato',
   };
   const RESULT_HINT = {
@@ -48,6 +49,7 @@
     document.querySelectorAll('.screen').forEach((el) => el.classList.toggle('hidden', el.id !== 'screen-' + name));
     const inGame = ['fight', 'pause', 'result'].includes(name);
     $('#hud').classList.toggle('hidden', !inGame);
+    document.body.classList.toggle('cup', mode === 'cup' && (inGame || name === 'cup'));
     if (!inGame) $('#announce').className = '';
     const first = document.querySelector(`#screen-${name} button`);
     if (first && name !== 'select') first.focus({ preventScroll: true });
@@ -57,11 +59,16 @@
   function startFight() {
     CK.Input.clear();
     if (mode === 'net') mode = 'pvp';
-    const cpu = mode === 'cpu';
-    game = CK.current = new CK.Game(picks[0], picks[1], settings, false, cpu ? settings.difficulty : null);
+    const cpu = mode === 'cpu' || mode === 'cup';
+    const level = mode === 'cup' ? cupLevel() : settings.difficulty;
+    game = CK.current = new CK.Game(picks[0], picks[1], settings, false, cpu ? level : null);
     ['p1', 'p2'].forEach((p, i) => { $(`#hud .${p} .bar-name`).textContent = CK.CHARACTERS[picks[i]].name; });
-    if (cpu) $('#hud .p2 .bar-name').textContent += ` · CPU ${CK.BOT_LEVELS[settings.difficulty].name}`;
-    $('#result-hint').innerHTML = RESULT_HINT[mode];
+    if (cpu) $('#hud .p2 .bar-name').textContent += ` · CPU ${CK.BOT_LEVELS[level].name}`;
+    if (mode === 'cup') {
+      game.onFinish = cupFinished;
+      game.noRematch = true;   // no torneio, o resultado segue para a chave (ver cupNext)
+    }
+    else $('#result-hint').innerHTML = RESULT_HINT[mode];
     show('fight');
     if (settings.showIntro && settings.introCount < INTRO_TIMES) {
       settings.introCount++;
@@ -91,6 +98,7 @@
 
   function toMenu() {
     game = null;
+    cup = null;
     show('menu');
   }
 
@@ -101,6 +109,9 @@
     switch (btn.dataset.action) {
       case 'play-cpu': mode = 'cpu'; openSelect(); break;
       case 'play-pvp': mode = 'pvp'; openSelect(); break;
+      case 'play-cup': mode = 'cup'; cup = null; openSelect(); break;
+      case 'cup-fight': cupFight(); break;
+      case 'cup-next': cupNext(); break;
       case 'play-net': show('net'); CK.Online.open(); break;
       case 'controls': show('controls'); break;
       case 'intro-go': if (game) game.skipIntro(); break;
@@ -151,9 +162,11 @@
   function buildCards() {
     const box = $('#cards');
     box.innerHTML = '';
-    // duas linhas: três colunas até 6 personagens, quatro (cards mais estreitos) acima disso
-    const cols = CK.CHAR_IDS.length > 6 ? 4 : 3;
+    // duas linhas: três colunas até 6 personagens, quatro até 8 e cinco acima disso (cards mais estreitos)
+    const n = CK.CHAR_IDS.length;
+    const cols = n > 8 ? 5 : n > 6 ? 4 : 3;
     box.classList.toggle('cols4', cols === 4);
+    box.classList.toggle('cols5', cols === 5);
     const tiles = CK.CHAR_IDS.map((id, i) => {
       const c = CK.CHARACTERS[id];
       const card = document.createElement('div');
@@ -161,9 +174,9 @@
       card.style.setProperty('--accent', c.color);
       card.innerHTML = `<img src="${frameSrc(id, 'idle', 0)}" alt="${c.name}">
         <span class="tag p1">1P</span><span class="tag p2">2P</span>`;
-      framePortrait(card.querySelector('img'), window.FRAMES[id].idle[0], cols === 4 ? 140 : 150);
+      framePortrait(card.querySelector('img'), window.FRAMES[id].idle[0], { 3: 150, 4: 140, 5: 112 }[cols]);
       card.onclick = () => {
-        const p = mode === 'net' ? CK.Online.mySlot : !sel.ok[0] ? 0 : !sel.ok[1] ? 1 : -1;
+        const p = mode === 'net' ? CK.Online.mySlot : !sel.ok[0] ? 0 : !sel.ok[1] && mode !== 'cup' ? 1 : -1;
         if (p < 0 || sel.ok[p]) return;
         sel.idx[p] = i;
         confirmPick(p);
@@ -210,6 +223,7 @@
     sel.ok = [false, false];
     sel.idx = [CK.CHAR_IDS.indexOf(picks[0]), CK.CHAR_IDS.indexOf(picks[1])];
     document.querySelectorAll('#cards .tag.p2').forEach((t) => { t.textContent = mode === 'cpu' ? 'CPU' : '2P'; });
+    $('#screen-select').classList.toggle('solo', mode === 'cup');
     $('#select-hint').innerHTML = SELECT_HINT[mode];
     CK.Input.clear();
     show('select');
@@ -222,7 +236,8 @@
       if (p >= 0 && sel.ok[p]) { sel.ok[p] = false; picked(p); }
       return;
     }
-    if (sel.ok[1]) sel.ok[1] = false;
+    if (mode === 'cup' && sel.ok[0]) sel.ok[0] = false;
+    else if (sel.ok[1]) sel.ok[1] = false;
     else if (sel.ok[0]) sel.ok[0] = false;
     else return show('menu');
     renderSelect();
@@ -239,7 +254,9 @@
     sel.ok[p] = true;
     CK.Sfx.play('confirm');
     picked(p);
-    if (mode !== 'net' && sel.ok[0] && sel.ok[1]) {
+    if (mode === 'cup') {
+      setTimeout(() => { if (screen === 'select' && sel.ok[0]) startCup(CK.CHAR_IDS[sel.idx[0]]); }, 900);
+    } else if (mode !== 'net' && sel.ok[0] && sel.ok[1]) {
       picks = sel.idx.map((i) => CK.CHAR_IDS[i]);
       setTimeout(() => { if (screen === 'select' && sel.ok[0] && sel.ok[1]) startFight(); }, 900);
     }
@@ -248,7 +265,7 @@
   function renderSelect() {
     document.querySelectorAll('#cards .card').forEach((card, i) => {
       card.classList.toggle('sel-p1', sel.idx[0] === i);
-      card.classList.toggle('sel-p2', sel.idx[1] === i);
+      card.classList.toggle('sel-p2', mode !== 'cup' && sel.idx[1] === i);
       card.classList.toggle('ok-p1', sel.ok[0] && sel.idx[0] === i);
       card.classList.toggle('ok-p2', sel.ok[1] && sel.idx[1] === i);
     });
@@ -265,7 +282,7 @@
         <div class="move"><b>Rápido</b> ${a1.name}</div>
         <div class="move"><b>Forte</b> ${a2.name}</div>`;
       drawSide(p, Date.now());
-      const label = mode === 'cpu' && p === 1 ? 'CPU' : mode === 'net' ? esc(CK.Online.slotName(p)) : `J${p + 1}`;
+      const label = (mode === 'cpu' || mode === 'cup') && p === 1 ? 'CPU' : mode === 'net' ? esc(CK.Online.slotName(p)) : `J${p + 1}`;
       $(`#st-p${p + 1}`).innerHTML = `<b>${label}</b> ${sel.ok[p] ? '<em>PRONTO ✓</em>' : '<i>escolhendo…</i>'}`;
     });
   }
@@ -309,6 +326,12 @@
       } else stepPick(p, inp);
       return;
     }
+    if (mode === 'cup') {
+      const inp = CK.Input.merge(inputs[0], inputs[1]);
+      if (inp.a2P && sel.ok[0]) { sel.ok[0] = false; renderSelect(); }
+      else if (!sel.ok[0]) stepPick(0, inp);
+      return;
+    }
     if (mode === 'cpu') {
       // um jogador escolhe os dois: primeiro o seu, depois o da CPU
       const inp = CK.Input.merge(inputs[0], inputs[1]);
@@ -332,6 +355,122 @@
     drawSide(0, now);
     drawSide(1, now);
   }, 150);
+
+  // ---------- torneio contra a CPU ----------
+  // mata-mata de 8: o jogador e sete adversários sorteados (sem repetir o lutador dele);
+  // as lutas entre CPUs são decididas na sorte, e a CPU fica mais forte a cada rodada
+  const CUP_ROUNDS = ['Quartas', 'Semifinal', 'Final'];
+  const CUP_PELA = ['pelas Quartas', 'pela Semifinal', 'pela Final'];
+  const LEVELS = Object.keys(CK.BOT_LEVELS);   // easy, normal, hard
+  let cup = null;            // { ids, rounds: [[{ a, b, w }]], r: rodada atual, champion, result }
+
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  function startCup(me) {
+    const size = 1 << CUP_ROUNDS.length;
+    const rivals = shuffle(CK.CHAR_IDS.filter((id) => id !== me));
+    // com poucos personagens, completa a chave repetindo lutadores
+    while (rivals.length < size - 1) rivals.push(CK.CHAR_IDS[Math.floor(Math.random() * CK.CHAR_IDS.length)]);
+    // o jogador entra na posição 0; os outros são identificados pela posição na chave
+    const ids = [me, ...rivals.slice(0, size - 1)];
+    const first = [];
+    for (let i = 0; i < size; i += 2) first.push({ a: i, b: i + 1, w: null });
+    const rounds = [first];
+    for (let n = size / 4; n >= 1; n /= 2) rounds.push(Array.from({ length: n }, () => ({ a: null, b: null, w: null })));
+    cup = { ids, rounds, r: 0, champion: null, result: null };
+    resolveCpuMatches();
+    showCup();
+  }
+
+  const cupMatch = () => cup.rounds[cup.r].find((m) => m.a === 0 || m.b === 0);
+  // dificuldade sobe a cada rodada em torno da escolhida nas configurações: abaixo, igual, acima
+  const cupLevel = () => LEVELS[Math.max(0, Math.min(LEVELS.length - 1, LEVELS.indexOf(settings.difficulty) + cup.r - 1))];
+
+  function setCupWinner(r, i, w) {
+    cup.rounds[r][i].w = w;
+    if (r + 1 < cup.rounds.length) cup.rounds[r + 1][i >> 1][i & 1 ? 'b' : 'a'] = w;
+    else cup.champion = w;
+  }
+
+  // CPU contra CPU: sorteio
+  function resolveCpuMatches() {
+    cup.rounds[cup.r].forEach((m, i) => {
+      if (m.w == null && m.a !== 0 && m.b !== 0) setCupWinner(cup.r, i, Math.random() < 0.5 ? m.a : m.b);
+    });
+  }
+
+  function showCup() {
+    const nm = (k) => (k == null ? '—' : esc(CK.CHARACTERS[cup.ids[k]].name) + (k === 0 ? ' <i>(você)</i>' : ''));
+    const next = cup.champion == null ? cupMatch() : null;
+    $('#cup-bracket').innerHTML = cup.rounds.map((round, r) => `<div class="bk-round">
+      <h4>${CUP_ROUNDS[r]}</h4><div class="bk-list">
+      ${round.map((m) => {
+        const cls = (k) => `bk-p${k === 0 ? ' me' : ''}${m.w != null && m.w === k ? ' win' : m.w != null && k != null ? ' lose' : ''}`;
+        return `<div class="bk-match${m === next ? ' cur' : ''}">
+          <div class="${cls(m.a)}">${nm(m.a)}</div>
+          <div class="${cls(m.b)}">${nm(m.b)}</div>
+        </div>`;
+      }).join('')}
+    </div></div>`).join('') + `<div class="bk-round champ"><h4>Campeão</h4><div class="bk-list"><div class="bk-match${cup.champion != null ? ' cur' : ''}"><div class="bk-p win">${cup.champion != null ? '🏆 ' + esc(CK.CHARACTERS[cup.ids[cup.champion]].name) : '?'}</div></div></div></div>`;
+    // quem perde tenta de novo, então o torneio só acaba com o jogador campeão
+    $('#cup-title').textContent = next ? 'Torneio' : 'Você é o campeão!';
+    $('#cup-hint').innerHTML = next
+      ? `${CUP_ROUNDS[cup.r]}: você × ${nm(next.a === 0 ? next.b : next.a)} · CPU ${CK.BOT_LEVELS[cupLevel()].name} · aperte <kbd>F</kbd> / <kbd>K</kbd> para lutar`
+      : `${esc(CK.CHARACTERS[cup.ids[0]].name)} venceu o torneio!`;
+    $('#cup-fight').classList.toggle('hidden', !next);
+    $('#cup-again').classList.toggle('hidden', !!next);
+    $('#cup-quit').textContent = next ? 'Desistir' : 'Menu principal';
+    game = null;
+    show('cup');
+    if (!next) CK.Sfx.play('win');
+  }
+
+  function cupFight() {
+    if (!cup || screen !== 'cup') return;
+    const m = cupMatch();
+    if (!m || cup.champion != null) return;
+    picks = [cup.ids[0], cup.ids[m.a === 0 ? m.b : m.a]];
+    startFight();
+  }
+
+  // fim de uma luta do jogador: avança na chave ou é eliminado (pode tentar de novo)
+  function cupFinished(w) {
+    const last = cup.r === CUP_ROUNDS.length - 1;
+    cup.result = w;
+    $('#cup-next').textContent = w === 0 ? (last ? 'Ver o campeão' : 'Próxima rodada') : 'Tentar de novo';
+    $('#result-hint').innerHTML = w === 0
+      ? `Você passou ${CUP_PELA[cup.r]}! Aperte <kbd>F</kbd> / <kbd>K</kbd> ou clique em ${last ? 'Ver o campeão' : 'Próxima rodada'}.`
+      : `${w < 0 ? 'Empate: a luta precisa de um vencedor.' : 'Não desista!'} Aperte <kbd>F</kbd> / <kbd>K</kbd> para tentar de novo.`;
+  }
+
+  function cupNext() {
+    if (!cup || !game || game.phase !== 'over') return;
+    if (cup.result !== 0) {        // revanche da mesma luta
+      CK.Input.clear();
+      game.reset();
+      return;
+    }
+    const m = cupMatch();
+    setCupWinner(cup.r, cup.rounds[cup.r].indexOf(m), 0);
+    if (cup.champion == null) {
+      cup.r++;
+      resolveCpuMatches();
+    }
+    showCup();
+  }
+
+  // teclado no chaveamento e no resultado; a revanche automática do modo vs CPU não vale aqui
+  function cupTick(inputs) {
+    const inp = CK.Input.merge(inputs[0], inputs[1]);
+    if (screen === 'cup' && inp.a1P) cupFight();
+    else if (screen === 'result' && inp.a1P) cupNext();
+  }
 
   // ---------- HUD ----------
   const announce = $('#announce');
@@ -367,7 +506,7 @@
       ['p1', 'p2'].forEach((p, i) => {
         const b = document.querySelector(`#screen-result button.${p}`);
         b.classList.toggle('ok', r[i]);
-        const label = mode === 'cpu' && i === 1 ? 'CPU' : mode === 'net' ? CK.Online.slotName(i) : `J${i + 1}`;
+        const label = (mode === 'cpu' || mode === 'cup') && i === 1 ? 'CPU' : mode === 'net' ? CK.Online.slotName(i) : `J${i + 1}`;
         b.textContent = `${label}: ${r[i] ? 'pronto ✓' : 'aceitar'}`;
         b.disabled = mode === 'net' && CK.Online.mySlot !== i;
       });
@@ -393,6 +532,7 @@
       sel.idx = [...idx];
       sel.ok = [...ok];
       document.querySelectorAll('#cards .tag.p2').forEach((t) => { t.textContent = '2P'; });
+      $('#screen-select').classList.remove('solo');
       $('#select-hint').innerHTML = SELECT_HINT[CK.Online.mySlot >= 0 ? 'net' : 'watch'];
       CK.Input.clear();
       show('select');
@@ -448,49 +588,8 @@
       else if (active) active.tick(inputs);
       if (!game) demo.tick(inputs);
       if (screen === 'select') selectTick(inputs);
+      if (mode === 'cup') cupTick(inputs);
     }
-  }
-
-  // mira do mouse (jogador 1, ou o próprio lutador em rede): some o cursor e desenha a mira na arena
-  function drawAim(now) {
-    const m = CK.Input.mouse;
-    const me = !game || screen !== 'fight' || game.phase === 'intro' || !m.in ? -1 : mode === 'net' ? CK.Online.mySlot : 0;
-    document.body.classList.toggle('aiming', me >= 0);
-    if (me < 0) return;
-    const f = game.fighters[me];
-    const ready = f.state !== 'ko' && f.canShoot(game);
-    const color = ready ? f.def.spark : 'rgba(255,255,255,.45)';
-    const r = 18 + (ready ? Math.sin(now / 150) * 2 : 0);
-    ctx.save();
-    ctx.lineCap = 'round';
-    // linha pontilhada da mão até a mira
-    if (ready) {
-      const hx = f.x + Math.sign(m.x - f.x || f.facing) * 60, hy = f.y - 170;
-      ctx.setLineDash([4, 12]);
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'rgba(255,255,255,.3)';
-      ctx.beginPath();
-      ctx.moveTo(hx, hy);
-      ctx.lineTo(m.x, m.y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    for (const [w, c] of [[7, 'rgba(0,0,0,.6)'], [3, color]]) {
-      ctx.lineWidth = w;
-      ctx.strokeStyle = c;
-      ctx.beginPath();
-      ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        ctx.moveTo(m.x + dx * (r - 8), m.y + dy * (r - 8));
-        ctx.lineTo(m.x + dx * (r + 9), m.y + dy * (r + 9));
-      }
-      ctx.stroke();
-    }
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(m.x, m.y, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
   }
 
   function loop(now) {
@@ -499,7 +598,6 @@
       const g = game || demo;
       ctx.setTransform(1, 0, 0, 1, CK.view.ox, CK.view.oy);
       g.draw(ctx, now / 1000);
-      drawAim(now);
       if (game) CK.UI.updateHud(game);
       updatePrefight();
     }

@@ -23,6 +23,7 @@ CK.Game = class Game {
     this.names = null;        // nomes dos jogadores (partida em rede)
     this.events = null;       // anfitrião em rede: guarda os eventos de cada tick para os outros
     this.onFinish = null;
+    this.noRematch = false;   // torneio contra a CPU: quem decide o que vem depois é main.js
     for (const f of this.fighters) f.game = this;
     this.reset();
   }
@@ -116,8 +117,7 @@ CK.Game = class Game {
     b.x = CK.wrapX(b.x + (s * gap) / 2);
   }
 
-  // aim: [x, y] mirado com o mouse (vai em linha reta até lá e segue em frente); sem aim, reto à frente
-  spawnProjectile(f, p, aim) {
+  spawnProjectile(f, p) {
     const fx = window.FX[p.fx];
     const s = CK.SCALE;
     const x = f.x + f.facing * (fx.dx + fx.w / 2) * s;
@@ -137,20 +137,7 @@ CK.Game = class Game {
       immune: 0,         // ticks sem poder acertar de novo (bumerangue)
       k: 1,              // escala extra (a onda cresce)
       alpha: 1,
-      ang: 0,            // inclinação do desenho (mira)
     };
-    if (aim) {
-      const len = Math.hypot(aim[0] - x, aim[1] - y) || 1;
-      pr.ux = (aim[0] - x) / len;   // direção da mira (vetor unitário)
-      pr.uy = (aim[1] - y) / len;
-      if (p.kind === 'bounce') {
-        // a bola é chutada na direção da mira e a gravidade faz o resto
-        pr.v = pr.ux * pr.dir * p.speed;
-        pr.vy = pr.uy * p.speed;
-      } else if (p.kind !== 'boomerang' && !p.spin) {
-        pr.ang = Math.atan2(pr.uy, pr.ux * pr.dir);
-      }
-    }
     this.projectiles.push(pr);
     this.emit('sfx', 'shot', f.charId);
   }
@@ -163,10 +150,8 @@ CK.Game = class Game {
       const dir = Math.sign(pr.v) * pr.dir || pr.dir;   // sentido real (o bumerangue volta)
       if (pr.p.kind !== 'blink') {
         // o rastro fica atrás do projétil, na direção em que ele anda
-        const [bx, by] = pr.ux !== undefined && pr.p.kind !== 'bounce'
-          ? [pr.ux * Math.sign(pr.v), pr.uy * Math.sign(pr.v)] : [dir, 0];
-        if (energy) this.emit('fx', 'energyTrail', pr.x - bx * 70 * pr.k, pr.y - by * 70 * pr.k, pr.owner.def.spark);
-        else this.emit('fx', 'trail', pr.x - bx * 55, pr.y - by * 55);
+        if (energy) this.emit('fx', 'energyTrail', pr.x - dir * 70 * pr.k, pr.y, pr.owner.def.spark);
+        else this.emit('fx', 'trail', pr.x - dir * 55, pr.y);
       }
       const target = this.fighters[1 - pr.owner.idx];
       const hurt = target.hurtbox();
@@ -177,6 +162,7 @@ CK.Game = class Game {
       pr.px = pr.x;
       pr.py = pr.y;
       if (pr.immune > 0) pr.immune--;
+      else if (pr.p.hitSpeed && Math.abs(pr.v) < pr.p.hitSpeed) continue;   // freando quase parado não machuca
       else if (hurt && CK.overlap(sweep, hurt)) {
         if (energy) this.emit('fx', 'energyBurst', pr.x, pr.y, pr.owner.def.spark);
         else this.emit('fx', 'explosion', pr.x, pr.y);
@@ -197,13 +183,12 @@ CK.Game = class Game {
   moveProjectile(pr) {
     const p = pr.p;
     pr.t++;
-    if (pr.ux !== undefined && p.kind !== 'bounce') return this.moveAimed(pr);
     switch (p.kind) {
       case 'boomerang': {
         // freia, inverte e volta para a mão de quem jogou
         pr.v = Math.max(-p.speed, pr.v - p.decel * CK.DT);
         pr.x += pr.dir * pr.v * CK.DT;
-        const ty = pr.v > 0 ? CK.GROUND + p.height : pr.owner.y - 160;
+        const ty = (pr.v > 0 ? CK.GROUND : pr.owner.y) + p.height;   // volta na mesma altura da ida
         pr.y += (ty - pr.y) * 0.12;
         if (pr.v < 0 && Math.abs(pr.x - pr.owner.x) < 70) this.caught(pr);   // pegou de volta
         break;
@@ -219,8 +204,9 @@ CK.Game = class Game {
           pr.vy = -Math.abs(pr.vy) * p.bounce;
           if (++pr.bounces > (p.bounces ?? 4)) {
             pr.dead = true;
+            if (p.blast) this.blast(pr);
             // sem quique (bounces: 0): estoura onde cai
-            if (!p.bounces && p.style === 'energy') this.emit('fx', 'energyBurst', pr.x, pr.y, pr.owner.def.spark);
+            else if (!p.bounces && p.style === 'energy') this.emit('fx', 'energyBurst', pr.x, pr.y, pr.owner.def.spark);
           }
           this.emit('fx', 'dust', pr.x, CK.GROUND, 3);
           this.emit('sfx', 'bounce');
@@ -252,60 +238,18 @@ CK.Game = class Game {
     if (pr.x < -150 || pr.x > CK.W + 150) pr.dead = true;
   }
 
-  // mesmas trajetórias, mas seguindo a direção da mira (ux, uy) em vez da altura fixa
-  moveAimed(pr) {
-    const p = pr.p;
-    const { ux, uy } = pr;
-    switch (p.kind) {
-      case 'boomerang': {
-        pr.v = Math.max(-p.speed, pr.v - p.decel * CK.DT);
-        if (pr.v > 0) {
-          pr.x += ux * pr.v * CK.DT;
-          pr.y += uy * pr.v * CK.DT;
-        } else {
-          // na volta, persegue a mão de quem jogou
-          const tx = pr.owner.x - pr.x, ty = pr.owner.y - 160 - pr.y;
-          const d = Math.hypot(tx, ty) || 1;
-          pr.x += (tx / d) * -pr.v * CK.DT;
-          pr.y += (ty / d) * -pr.v * CK.DT;
-          if (d < 80) this.caught(pr);   // pegou de volta
-        }
-        break;
-      }
-      case 'blink': {
-        if (pr.t % p.every === 0) {
-          pr.x += ux * p.step;
-          pr.y += uy * p.step;
-          this.emit('sfx', 'blink');
-        }
-        break;
-      }
-      default: {
-        if (p.accel) pr.v = Math.min(p.maxSpeed || Infinity, pr.v + p.accel * CK.DT);
-        pr.x += ux * pr.v * CK.DT;
-        pr.y += uy * pr.v * CK.DT;
-        if (p.kind === 'wave') {
-          const k = Math.hypot(pr.x - pr.x0, pr.y - pr.y0) / p.range;
-          pr.k = 1 + k * (p.grow - 1);
-          pr.alpha = Math.min(1, (1 - k) * 3);
-          if (k >= 1) pr.dead = true;
-        }
-      }
-    }
-    // mirou no chão: estoura lá (o bumerangue raspa e volta)
-    if (pr.y > CK.GROUND - 20) {
-      if (p.kind === 'boomerang') {
-        pr.y = CK.GROUND - 20;
-        if (pr.v > 0) pr.v = 0;
-      } else {
-        pr.dead = true;
-        if (p.style === 'energy') this.emit('fx', 'energyBurst', pr.x, CK.GROUND - 20, pr.owner.def.spark);
-        else this.emit('fx', 'explosion', pr.x, CK.GROUND - 20);
-        this.emit('fx', 'dust', pr.x, CK.GROUND, 5);
-        this.emit('sfx', 'shotHit', pr.owner.charId);
-      }
-    }
-    if (p.kind !== 'boomerang' && (pr.x < -150 || pr.x > CK.W + 150 || pr.y < -400)) pr.dead = true;
+  // bomba: estoura no chão e acerta quem estiver a até "blast" px da explosão
+  blast(pr) {
+    const x = pr.x, y = CK.GROUND - 40;
+    this.emit('fx', 'explosion', x, y);
+    this.emit('fx', 'dust', x, CK.GROUND, 8);
+    this.emit('fx', 'addShake', 12);
+    const target = this.fighters[1 - pr.owner.idx];
+    const hurt = target.hurtbox();
+    // distância da explosão até o corpo: de lado ou até os pés (pulando alto dá para escapar)
+    const d = hurt ? Math.max(hurt.x - x, x - (hurt.x + hurt.w), CK.GROUND - (hurt.y + hurt.h)) : Infinity;
+    if (d <= pr.p.blast) this.hit(pr.owner, target, pr.p, x, y, target.x >= x ? 1 : -1);
+    else this.emit('sfx', 'shotHit', pr.owner.charId);
   }
 
   // o bumerangue voltou para a mão de quem jogou
@@ -379,14 +323,14 @@ CK.Game = class Game {
         : `${this.names ? this.names[this.winner.idx] : this.winner.def.name} vence!`;
     }
     this.emit('result', title, this.winner ? this.winner.idx : -1);
-    if (this.bot) {          // o computador sempre aceita a revanche
+    if (this.bot && !this.noRematch) {   // o computador sempre aceita a revanche
       this.rematch[1] = true;
       this.emit('rematch', this.rematch);
     }
   }
 
   acceptRematch(i) {
-    if (this.phase !== 'over' || this.rematch[i]) return;
+    if (this.phase !== 'over' || this.rematch[i] || this.noRematch) return;
     this.rematch[i] = true;
     this.emit('sfx', 'confirm');
     this.emit('rematch', this.rematch);
@@ -404,7 +348,7 @@ CK.Game = class Game {
     return {
       f: this.fighters.map((f) => f.serialize()),
       p: this.projectiles.map((pr) => ({
-        o: pr.owner.idx, d: pr.dir, x: pr.x, y: pr.y, t: pr.t, k: pr.k, a: pr.alpha, r: pr.ang,
+        o: pr.owner.idx, d: pr.dir, x: pr.x, y: pr.y, t: pr.t, k: pr.k, a: pr.alpha,
         q: { fx: pr.p.fx, kind: pr.p.kind, every: pr.p.every, scale: pr.p.scale, spin: pr.p.spin },
       })),
       ph: this.phase, pt: this.phaseT, hs: this.hitstop, sm: this.slowmo, tm: this.time,
@@ -415,7 +359,7 @@ CK.Game = class Game {
   applyState(s) {
     s.f.forEach((st, i) => this.fighters[i].applyState(st));
     this.projectiles = s.p.map((p) => ({
-      owner: this.fighters[p.o], dir: p.d, x: p.x, y: p.y, t: p.t, k: p.k, alpha: p.a, ang: p.r || 0, p: p.q, fx: window.FX[p.q.fx],
+      owner: this.fighters[p.o], dir: p.d, x: p.x, y: p.y, t: p.t, k: p.k, alpha: p.a, p: p.q, fx: window.FX[p.q.fx],
     }));
     this.phase = s.ph;
     this.phaseT = s.pt;
@@ -444,7 +388,7 @@ CK.Game = class Game {
       ctx.translate(pr.x, pr.y);
       const k = CK.SCALE * (pr.p.scale || 1) * pr.k;
       ctx.scale(pr.dir * k, k);
-      ctx.rotate(pr.ang + (-pr.fx.angle * Math.PI) / 180 + (pr.p.spin || 0) * time);
+      ctx.rotate((-pr.fx.angle * Math.PI) / 180 + (pr.p.spin || 0) * time);
       ctx.drawImage(img, -pr.fx.w / 2, -pr.fx.h / 2, pr.fx.w, pr.fx.h);
       ctx.restore();
     }
