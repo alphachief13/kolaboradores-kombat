@@ -13,9 +13,9 @@ CK.Online = (() => {
   const TIMEOUT = 8000;        // ms sem notícias = desconectado
   const QR_LIB = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
 
-  // entrada de um tick em 10 bits (5 segurando + 5 apertou agora)
+  // entrada de um tick em bits; os que terminam em P são "apertou agora", o resto é "segurando"
   const BITS = ['left', 'right', 'up', 'a1', 'a2', 'block', 'upP', 'a1P', 'a2P', 'blockP', 'leftP', 'rightP', 'dash', 'dashP'];
-  const PRESS = 0b1111100000;
+  const PRESS = BITS.reduce((b, k, i) => (k.endsWith('P') ? b | (1 << i) : b), 0);
   const encode = (inp) => BITS.reduce((b, k, i) => (inp[k] ? b | (1 << i) : b), 0);
   const decode = (b) => Object.fromEntries(BITS.map((k, i) => [k, !!(b & (1 << i))]));
   const NONE = decode(0);
